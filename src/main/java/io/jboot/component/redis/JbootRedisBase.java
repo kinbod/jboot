@@ -49,14 +49,14 @@ public abstract class JbootRedisBase implements JbootRedis {
     }
 
     public byte[] valueToBytes(Object value) {
-        return Jboot.getSerializer().serialize(value);
+        return Jboot.me().getSerializer().serialize(value);
     }
 
     public Object valueFromBytes(byte[] bytes) {
         if (bytes == null || bytes.length == 0) {
             return null;
         }
-        return Jboot.getSerializer().deserialize(bytes);
+        return Jboot.me().getSerializer().deserialize(bytes);
     }
 
     public byte[][] valuesToBytesArray(Object... valuesArray) {
@@ -73,18 +73,21 @@ public abstract class JbootRedisBase implements JbootRedis {
     }
 
     @SuppressWarnings("rawtypes")
-    public List valueListFromBytesList(List<byte[]> data) {
-        List<Object> result = new ArrayList<Object>();
-        for (byte[] d : data)
-            result.add(valueFromBytes(d));
-        return result;
-    }
-
-    @SuppressWarnings("rawtypes")
     public List valueListFromBytesList(Collection<byte[]> data) {
         List<Object> result = new ArrayList<Object>();
-        for (byte[] d : data)
-            result.add(valueFromBytes(d));
+        for (byte[] d : data) {
+            Object object = null;
+            try {
+                object = valueFromBytes(d);
+            } catch (Throwable ex) {
+                /**
+                 *  有可能出现错误的情况
+                 *  在类似blpop等命令，会出现把key也返回，key并不是通过序列化转成byte，而是  key.toString().getBytes()
+                 */
+                object = new String(d);
+            }
+            result.add(object);
+        }
         return result;
     }
 

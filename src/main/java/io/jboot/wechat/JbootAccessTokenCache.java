@@ -21,20 +21,20 @@ import io.jboot.Jboot;
 
 public class JbootAccessTokenCache implements IAccessTokenCache {
 
-    static final String cache_name = "wechat_access_tokens";
+    static final String cache_name = "__jboot_wechat_access_tokens";
 
     @Override
     public String get(String key) {
-        return Jboot.getCache().get(cache_name, key);
+        return Jboot.me().getCache().get(cache_name, key);
     }
 
     @Override
     public void set(String key, String value) {
-        Jboot.getCache().put(cache_name, key, value);
+        Jboot.me().getCache().put(cache_name, key, value);
     }
 
     @Override
     public void remove(String key) {
-        Jboot.getCache().remove(cache_name, key);
+        Jboot.me().getCache().remove(cache_name, key);
     }
 }

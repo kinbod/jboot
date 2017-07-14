@@ -18,17 +18,9 @@ package io.jboot.server;
 
 public abstract class JbootServer {
 
-    private JbootServerConfig config;
-
-    public JbootServer(JbootServerConfig config) {
-        this.config = config;
-    }
-
-    public JbootServerConfig getConfig() {
-        return config;
-    }
-
     public abstract boolean start();
+
+    public abstract boolean restart();
 
     public abstract boolean stop();
 

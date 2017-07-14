@@ -30,6 +30,7 @@ import io.jboot.utils.ClassNewer;
 import io.jboot.utils.ClassScanner;
 import io.jboot.utils.StringUtils;
 
+import java.io.Serializable;
 import java.util.List;
 
 
@@ -58,10 +59,10 @@ public class JbootrpcManager {
         return jbootrpc;
     }
 
-    static Class[] default_excludes = new Class[]{JbootEventListener.class, JbootmqMessageListener.class};
+    static Class[] default_excludes = new Class[]{JbootEventListener.class, JbootmqMessageListener.class, Serializable.class};
 
 
-    public void autoExport() {
+    public void init() {
         List<Class> classes = ClassScanner.scanClass(true);
         if (ArrayUtils.isNullOrEmpty(classes)) {
             return;
@@ -86,7 +87,7 @@ public class JbootrpcManager {
                     if (ex == inter) exclude = true;
                 }
                 if (exclude) continue;
-                getJbootrpc().serviceExport(inter, Jboot.getInjector().getInstance(clazz), group, version, port);
+                getJbootrpc().serviceExport(inter, Jboot.me().getInjector().getInstance(clazz), group, version, port);
             }
         }
     }

@@ -15,12 +15,61 @@
  */
 package io.jboot.component.shiro;
 
+import com.jfinal.kit.PathKit;
 import io.jboot.config.annotation.PropertieConfig;
+
+import java.io.File;
 
 @PropertieConfig(prefix = "jboot.shiro")
 public class JbootShiroConfig {
 
-    
+    private String loginUrl;
+    private String successUrl;
+    private String unauthorizedUrl;
+    private String shiroIniFile = "shiro.ini";
+
+
+    public String getLoginUrl() {
+        return loginUrl;
+    }
+
+    public void setLoginUrl(String loginUrl) {
+        this.loginUrl = loginUrl;
+    }
+
+    public String getSuccessUrl() {
+        return successUrl;
+    }
+
+    public void setSuccessUrl(String successUrl) {
+        this.successUrl = successUrl;
+    }
+
+    public String getUnauthorizedUrl() {
+        return unauthorizedUrl;
+    }
+
+    public void setUnauthorizedUrl(String unauthorizedUrl) {
+        this.unauthorizedUrl = unauthorizedUrl;
+    }
+
+    public String getShiroIniFile() {
+        return shiroIniFile;
+    }
+
+    public void setShiroIniFile(String shiroIniFile) {
+        this.shiroIniFile = shiroIniFile;
+    }
+
+
+    private Boolean config;
+
+    public boolean isConfigOK() {
+        if (config == null) {
+            config = new File(PathKit.getRootClassPath(), shiroIniFile).exists();
+        }
+        return config;
+    }
 }
 
 

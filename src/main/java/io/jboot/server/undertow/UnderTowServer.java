@@ -16,6 +16,8 @@
 package io.jboot.server.undertow;
 
 import com.codahale.metrics.servlets.AdminServlet;
+import com.jfinal.aop.InterceptorManager;
+import com.jfinal.config.Routes;
 import com.jfinal.core.JFinalFilter;
 import com.jfinal.log.Log;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
@@ -24,6 +26,7 @@ import io.jboot.component.hystrix.JbootHystrixConfig;
 import io.jboot.component.metrics.JbootHealthCheckServletContextListener;
 import io.jboot.component.metrics.JbootMetricsConfig;
 import io.jboot.component.metrics.JbootMetricsServletContextListener;
+import io.jboot.component.shiro.JbootShiroConfig;
 import io.jboot.server.JbootServer;
 import io.jboot.server.JbootServerConfig;
 import io.jboot.utils.StringUtils;
@@ -35,8 +38,15 @@ import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.ServletContainer;
+import org.apache.shiro.web.env.EnvironmentLoaderListener;
+import org.apache.shiro.web.servlet.ShiroFilter;
 
 import javax.servlet.DispatcherType;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
 
 
 public class UnderTowServer extends JbootServer {
@@ -44,27 +54,68 @@ public class UnderTowServer extends JbootServer {
     static Log log = Log.getLog(UnderTowServer.class);
 
     private DeploymentManager mDeploymentManager;
+    private DeploymentInfo mDeploymentInfo;
     private PathHandler mHandler;
     private Undertow mServer;
+    private ServletContainer mServletContainer;
+    private JbootServerConfig config;
 
 
-    public UnderTowServer(JbootServerConfig config) {
-        super(config);
-        initUndertowServer();
+    public UnderTowServer() {
+        config = Jboot.config(JbootServerConfig.class);
+
     }
 
     public void initUndertowServer() {
+
+
+        UnderTowClassloader classloader = new UnderTowClassloader(UnderTowServer.class.getClassLoader());
+        classloader.setDefaultAssertionStatus(false);
+
+        initJfinalConfig();
+
+
+        mDeploymentInfo = buildDeploymentInfo(classloader);
+        mServletContainer = Servlets.newContainer();
+        mDeploymentManager = mServletContainer.addDeployment(mDeploymentInfo);
+        mDeploymentManager.deploy();
+
+
+        HttpHandler httpHandler = null;
+        try {
+            /**
+             * 启动并初始化servlet和filter
+             */
+            httpHandler = mDeploymentManager.start();
+        } catch (Throwable ex) {
+            ex.printStackTrace();
+        }
+
+
+        mHandler = Handlers.path(
+                Handlers.resource(new ClassPathResourceManager(classloader, "webRoot")))
+                .addPrefixPath(config.getContextPath(), httpHandler);
+
+
+        mServer = Undertow.builder()
+                .addHttpListener(config.getPort(), config.getHost())
+                .setHandler(mHandler)
+                .build();
+
+    }
+
+    private DeploymentInfo buildDeploymentInfo(UnderTowClassloader classloader) {
         DeploymentInfo deploymentInfo = Servlets.deployment()
-                .setClassLoader(UnderTowServer.class.getClassLoader())
-                .setResourceManager(new ClassPathResourceManager(UnderTowServer.class.getClassLoader()))
-                .setContextPath(getConfig().getContextPath())
-                .setDeploymentName("jboot")
-                .setEagerFilterInit(true); //设置启动的时候，初始化servlet或filter（好吧，跟了很久的源代码...）
+                .setClassLoader(classloader)
+                .setResourceManager(new ClassPathResourceManager(classloader))
+                .setContextPath(config.getContextPath())
+                .setDeploymentName("jboot" + StringUtils.uuid())
+                .setEagerFilterInit(true); //设置启动的时候，初始化servlet或filter
 
 
         deploymentInfo.addFilter(
                 Servlets.filter("jboot", JFinalFilter.class)
-                        .addInitParam("configClass", Jboot.getJbootConfig().getJfinalConfig()))
+                        .addInitParam("configClass", Jboot.me().getJbootConfig().getJfinalConfig()))
                 .addFilterUrlMapping("jboot", "/*", DispatcherType.REQUEST);
 
 
@@ -87,50 +138,95 @@ public class UnderTowServer extends JbootServer {
         }
 
 
+        JbootShiroConfig shiroConfig = Jboot.config(JbootShiroConfig.class);
+        if (shiroConfig.isConfigOK()) {
+            deploymentInfo.addListeners(Servlets.listener(EnvironmentLoaderListener.class));
+            deploymentInfo.addFilter(
+                    Servlets.filter("shiro", ShiroFilter.class))
+                    .addFilterUrlMapping("shiro", "/*", DispatcherType.REQUEST);
+        }
+
         deploymentInfo.addServlets(
                 Servlets.servlet("JbootResourceServlet", JbootResourceServlet.class)
                         .addMapping("/*"));
 
-        mDeploymentManager = Servlets.defaultContainer().addDeployment(deploymentInfo);
-        mDeploymentManager.deploy();
+        return deploymentInfo;
 
 
-        HttpHandler httpHandler = null;
+    }
+
+    private void initJfinalConfig() {
         try {
-            /**
-             * 启动并初始化servlet和filter
-             */
-            httpHandler = mDeploymentManager.start();
+            Class jfinalCoreConfigClass = Class.forName("com.jfinal.core.Config");
+
+            Field routesField = jfinalCoreConfigClass.getDeclaredField("routes");
+            routesField.setAccessible(true);
+            Routes routes = (Routes) routesField.get(null);
+
+
+            Field controllerKeySet = Routes.class.getDeclaredField("controllerKeySet");
+            controllerKeySet.setAccessible(true);
+            controllerKeySet.set(null, new HashSet<>());
+
+
+            Field routesList = Routes.class.getDeclaredField("routesList");
+            routesList.setAccessible(true);
+            routesList.set(null, new ArrayList<>());
+
+
+            Field routeItemList = Routes.class.getDeclaredField("routeItemList");
+            routeItemList.setAccessible(true);
+            routeItemList.set(routes, new ArrayList<>());
+
+            Field injectInters = Routes.class.getDeclaredField("injectInters");
+            injectInters.setAccessible(true);
+            injectInters.set(routes, new ArrayList<>());
+
+
+            Field singletonMapField = InterceptorManager.class.getDeclaredField("singletonMap");
+            singletonMapField.setAccessible(true);
+            Map map = (Map) singletonMapField.get(InterceptorManager.me());
+            map.clear();
+
+
         } catch (Throwable ex) {
             ex.printStackTrace();
         }
-
-
-        mHandler = Handlers.path(
-                Handlers.resource(new ClassPathResourceManager(UnderTowServer.class.getClassLoader(), "webRoot")))
-                .addPrefixPath(getConfig().getContextPath(), httpHandler);
-
-        mServer = Undertow.builder()
-                .addHttpListener(getConfig().getPort(), getConfig().getHost())
-                .setHandler(mHandler)
-                .build();
     }
+
 
     @Override
     public boolean start() {
         try {
+            initUndertowServer();
             mServer.start();
         } catch (Throwable ex) {
             log.error(ex.toString(), ex);
             stop();
             return false;
         }
-
         return true;
     }
 
     @Override
+    public boolean restart() {
+        try {
+            stop();
+            start();
+            System.err.println("undertow restarted!!!");
+        } catch (Throwable ex) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    @Override
     public boolean stop() {
+        mHandler.clearPaths();
+        mDeploymentManager.undeploy();
+        mServletContainer.removeDeployment(mDeploymentInfo);
         mServer.stop();
         return true;
     }

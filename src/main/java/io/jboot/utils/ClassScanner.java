@@ -19,6 +19,7 @@ import com.jfinal.kit.PathKit;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -75,6 +76,32 @@ public class ClassScanner {
             list.addAll(appClasses);
         }
 
+        return list;
+    }
+
+    public static List<Class> scanClassByAnnotation(Class annotationClass, boolean mustCanNewInstance) {
+
+        if (appClasses.isEmpty()) {
+            initAppClasses();
+        }
+
+        List<Class> list = new ArrayList<>();
+
+        for (Class clazz : appClasses) {
+            Annotation annotation = clazz.getAnnotation(annotationClass);
+            if (annotation == null) {
+                continue;
+            }
+
+            if (mustCanNewInstance) {
+                if (clazz.isInterface()
+                        || Modifier.isAbstract(clazz.getModifiers())) {
+                    continue;
+                }
+            }
+
+            list.add(clazz);
+        }
         return list;
     }
 

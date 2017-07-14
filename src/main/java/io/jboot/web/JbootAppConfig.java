@@ -29,7 +29,9 @@ import com.jfinal.weixin.sdk.api.ApiConfigKit;
 import io.jboot.Jboot;
 import io.jboot.component.log.Slf4jLogFactory;
 import io.jboot.component.metrics.JbootMetricsManager;
+import io.jboot.component.shiro.JbootShiroInterceptor;
 import io.jboot.core.cache.JbootCacheConfig;
+import io.jboot.core.rpc.JbootrpcManager;
 import io.jboot.db.JbootDbManager;
 import io.jboot.schedule.JbootTaskManager;
 import io.jboot.utils.ClassNewer;
@@ -62,8 +64,8 @@ public class JbootAppConfig extends JFinalConfig {
 
         PropKit.use("jboot.properties");
         constants.setRenderFactory(new JbootRenderFactory());
-        constants.setDevMode(Jboot.isDevMode());
-        ApiConfigKit.setDevMode(Jboot.isDevMode());
+        constants.setDevMode(Jboot.me().isDevMode());
+        ApiConfigKit.setDevMode(Jboot.me().isDevMode());
 
         JbootWechatConfig config = Jboot.config(JbootWechatConfig.class);
         ApiConfig apiConfig = config.getApiConfig();
@@ -79,6 +81,7 @@ public class JbootAppConfig extends JFinalConfig {
 
     @Override
     public void configRoute(Routes routes) {
+
         List<Class<Controller>> controllerClassList = ClassScanner.scanSubClass(Controller.class);
         if (controllerClassList == null) {
             return;
@@ -95,6 +98,7 @@ public class JbootAppConfig extends JFinalConfig {
             } else {
                 routes.add(mapping.value(), clazz);
             }
+
         }
     }
 
@@ -103,6 +107,7 @@ public class JbootAppConfig extends JFinalConfig {
 
         /**
          * now 并没有被添加到默认的指令当中
+         * 先添加，后移除，防止在热加载的时候重复添加而产生异常。
          * 查看：EngineConfig
          */
         engine.addDirective("now", new com.jfinal.template.ext.directive.NowDirective());
@@ -113,6 +118,7 @@ public class JbootAppConfig extends JFinalConfig {
             if (jDirective != null) {
                 Directive directive = ClassNewer.newInstance((Class<Directive>) clazz);
                 if (directive != null) {
+                    engine.removeDirective(jDirective.value());
                     engine.addDirective(jDirective.value(), directive);
                 }
             }
@@ -131,7 +137,6 @@ public class JbootAppConfig extends JFinalConfig {
             if (sharedObject != null) {
                 engine.addSharedObject(sharedObject.value(), ClassNewer.newInstance(clazz));
             }
-
         }
     }
 
@@ -143,8 +148,8 @@ public class JbootAppConfig extends JFinalConfig {
             plugins.add(JbootDbManager.me().getActiveRecordPlugin());
         }
 
-        if (JbootDbManager.me().isMasterConfigOk()) {
-            plugins.add(JbootDbManager.me().getMasterActiveRecordPlugin());
+        if (JbootDbManager.me().isProxyConfigOk()) {
+            plugins.add(JbootDbManager.me().getProxyActiveRecordPlugin());
         }
 
         if (JbootTaskManager.me().isCron4jEnable()) {
@@ -155,11 +160,6 @@ public class JbootAppConfig extends JFinalConfig {
         if (JbootCacheConfig.TYPE_EHCACHE.equals(cacheConfig.getType())
                 || JbootCacheConfig.TYPE_EHREDIS.equals(cacheConfig.getType())) {
 
-//            String ehcacheDiskStorePath = PathKit.getRootClassPath();
-//            File pathFile = new File(ehcacheDiskStorePath, ".ehcache");
-//
-//            Configuration cfg = ConfigurationFactory.parseConfiguration();
-//            cfg.addDiskStore(new DiskStoreConfiguration().path(pathFile.getAbsolutePath()));
             plugins.add(new EhCachePlugin());
         }
 
@@ -168,7 +168,10 @@ public class JbootAppConfig extends JFinalConfig {
 
     @Override
     public void configInterceptor(Interceptors interceptors) {
+
+
         interceptors.add(new GuiceInterceptor());
+        interceptors.add(new JbootShiroInterceptor());
         interceptors.add(new ParaValidateInterceptor());
     }
 
@@ -186,12 +189,13 @@ public class JbootAppConfig extends JFinalConfig {
         /**
          * 初始化
          */
-        JbootMetricsManager.me();
+        JbootMetricsManager.me().init();
+        JbootrpcManager.me().init();
 
         /**
          * 发送启动完成通知
          */
-        Jboot.sendEvent(Jboot.EVENT_STARTED, null);
+        Jboot.me().sendEvent(Jboot.EVENT_STARTED, null);
 
     }
 
