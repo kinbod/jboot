@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.config.annotation;
+package io.jboot.core.cache.annotation;
 
 import java.lang.annotation.*;
 
-
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface PropertieConfig {
-    String prefix();
+@Target({ElementType.METHOD})
+public @interface CacheEvict {
+    String name();
 
-    String file() default "";
+    String key() default "";
+
+    String unless() default "";
 }

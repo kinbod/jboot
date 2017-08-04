@@ -21,6 +21,7 @@ import com.jfinal.json.JsonManager;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
+import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.ehcache.EhCachePlugin;
 import com.jfinal.template.Directive;
 import com.jfinal.template.Engine;
@@ -30,10 +31,12 @@ import io.jboot.Jboot;
 import io.jboot.component.log.Slf4jLogFactory;
 import io.jboot.component.metrics.JbootMetricsManager;
 import io.jboot.component.shiro.JbootShiroInterceptor;
+import io.jboot.component.shiro.JbootShiroManager;
 import io.jboot.core.cache.JbootCacheConfig;
 import io.jboot.core.rpc.JbootrpcManager;
 import io.jboot.db.JbootDbManager;
 import io.jboot.schedule.JbootTaskManager;
+import io.jboot.server.listener.JbootAppListenerManager;
 import io.jboot.utils.ClassNewer;
 import io.jboot.utils.ClassScanner;
 import io.jboot.web.controller.annotation.RequestMapping;
@@ -50,6 +53,7 @@ import io.jboot.wechat.JbootWechatConfig;
 
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -57,6 +61,7 @@ import java.util.List;
 public class JbootAppConfig extends JFinalConfig {
 
     static final Log log = Log.getLog(JbootAppConfig.class);
+    private List<Routes.Route> routeList = new ArrayList<>();
 
 
     @Override
@@ -76,6 +81,8 @@ public class JbootAppConfig extends JFinalConfig {
         constants.setLogFactory(Slf4jLogFactory.me());
         constants.setMaxPostSize(1024 * 1024 * 2000);
         constants.setReportAfterInvocation(false);
+
+        JbootAppListenerManager.me().onJfinalConstantConfig(constants);
     }
 
 
@@ -98,8 +105,11 @@ public class JbootAppConfig extends JFinalConfig {
             } else {
                 routes.add(mapping.value(), clazz);
             }
-
         }
+
+        JbootAppListenerManager.me().onJfinalRouteConfig(routes);
+
+        routeList.addAll(routes.getRouteItemList());
     }
 
     @Override
@@ -138,18 +148,17 @@ public class JbootAppConfig extends JFinalConfig {
                 engine.addSharedObject(sharedObject.value(), ClassNewer.newInstance(clazz));
             }
         }
+
+        JbootAppListenerManager.me().onJfinalEngineConfig(engine);
     }
 
 
     @Override
     public void configPlugin(Plugins plugins) {
 
-        if (JbootDbManager.me().isConfigOk()) {
-            plugins.add(JbootDbManager.me().getActiveRecordPlugin());
-        }
-
-        if (JbootDbManager.me().isProxyConfigOk()) {
-            plugins.add(JbootDbManager.me().getProxyActiveRecordPlugin());
+        List<ActiveRecordPlugin> arps = JbootDbManager.me().getActiveRecordPlugins();
+        for (ActiveRecordPlugin arp : arps) {
+            plugins.add(arp);
         }
 
         if (JbootTaskManager.me().isCron4jEnable()) {
@@ -163,6 +172,8 @@ public class JbootAppConfig extends JFinalConfig {
             plugins.add(new EhCachePlugin());
         }
 
+        JbootAppListenerManager.me().onJfinalPluginConfig(plugins);
+
     }
 
 
@@ -173,11 +184,15 @@ public class JbootAppConfig extends JFinalConfig {
         interceptors.add(new GuiceInterceptor());
         interceptors.add(new JbootShiroInterceptor());
         interceptors.add(new ParaValidateInterceptor());
+
+        JbootAppListenerManager.me().onInterceptorConfig(interceptors);
     }
 
     @Override
     public void configHandler(Handlers handlers) {
         handlers.add(new JbootHandler());
+
+        JbootAppListenerManager.me().onHandlerConfig(handlers);
     }
 
     @Override
@@ -191,11 +206,14 @@ public class JbootAppConfig extends JFinalConfig {
          */
         JbootMetricsManager.me().init();
         JbootrpcManager.me().init();
+        JbootShiroManager.me().init(routeList);
 
         /**
          * 发送启动完成通知
          */
         Jboot.me().sendEvent(Jboot.EVENT_STARTED, null);
+
+        JbootAppListenerManager.me().onJbootStarted();
 
     }
 
@@ -212,6 +230,8 @@ public class JbootAppConfig extends JFinalConfig {
                 }
             }
         }
+
+        JbootAppListenerManager.me().onJFinalStop();
     }
 
 

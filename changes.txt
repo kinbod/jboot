@@ -1,3 +1,22 @@
+jboot-1.0-beta3:
+1、修复使用@Inject自动注入后，再使用JFinal的@Before(Tx.Class)会出现空指针的问题。
+2、修复读取配置文件的时候，同一个Class对于不同的配置信息读取不到的问题。
+3、修复多数据源的时候，读取数据源解析错误的问题。
+4、修复readme文档编写错误的问题。
+5、修复当有JbootAppListener监听器的时候，JbootAppListenerManager无法初始化的问题。
+
+jboot-1.0-beta2:
+1、修复jboot shiro模块的相关bug，可以愉快的在项目中使用shiro了，而且可能是jfinal的shiro支持中最好用的一个。感谢@zhoujh
+2、修复无法实例化JbootDbManager的bug。
+3、修复JbootRedisLock基于Redis的分布式锁release出错的bug。
+
+4、新增datasource poolName的配置支持。
+5、新增多数据源的支持，非常非常简单的在Jfinal中使用多数据源。
+6、新增CacheEvict和CachePut两个注解，方便通过配置设置缓存。
+7、新增JbootAppListener监听器，方便监听Jboot和Jfinal的启动状态，对自己的程序进行初始化等工作。
+8、新增Jfinal sql template 配置的支持，只需在jboot.properties进行配置，无需一行代码。
+
+
 jboot-1.0-beta1:
 1、重构shiro模块，使其支持shiro.ini配置，方便其他项目迁移。
 2、新增JbootRedisLock基于redis的分布式锁。

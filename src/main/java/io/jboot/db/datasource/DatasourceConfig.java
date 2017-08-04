@@ -15,11 +15,9 @@
  */
 package io.jboot.db.datasource;
 
-import io.jboot.config.annotation.PropertieConfig;
 import io.jboot.utils.StringUtils;
 
 
-@PropertieConfig(prefix = "jboot.datasource")
 public class DatasourceConfig {
     public static final String TYPE_MYSQL = "mysql";
     public static final String TYPE_ORACLE = "oracle";
@@ -28,17 +26,30 @@ public class DatasourceConfig {
     public static final String TYPE_ANSISQL = "ansisql";
     public static final String TYPE_POSTGRESQL = "postgresql";
 
+    private String name;
     private String type = TYPE_MYSQL;
     private String url;
     private String user;
     private String password;
     private String driverClassName = "com.mysql.jdbc.Driver";
     private String connectionInitSql;
+    private String poolName;
     private boolean cachePrepStmts = true;
     private int prepStmtCacheSize = 500;
     private int prepStmtCacheSqlLimit = 2048;
     private int maximumPoolSize = 100;
 
+    private String sqlTemplatePath;
+    private String sqlTemplate;
+    private String table;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getType() {
         return type;
@@ -144,5 +155,35 @@ public class DatasourceConfig {
         return TYPE_ANSISQL.equals(getType());
     }
 
+    public String getSqlTemplatePath() {
+        return sqlTemplatePath;
+    }
 
+    public void setSqlTemplatePath(String sqlTemplatePath) {
+        this.sqlTemplatePath = sqlTemplatePath;
+    }
+
+    public String getSqlTemplate() {
+        return sqlTemplate;
+    }
+
+    public void setSqlTemplate(String sqlTemplate) {
+        this.sqlTemplate = sqlTemplate;
+    }
+
+    public String getTable() {
+        return table;
+    }
+
+    public void setTable(String table) {
+        this.table = table;
+    }
+
+    public String getPoolName() {
+        return poolName;
+    }
+
+    public void setPoolName(String poolName) {
+        this.poolName = poolName;
+    }
 }

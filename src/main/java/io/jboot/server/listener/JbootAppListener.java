@@ -13,15 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.db.datasource;
+package io.jboot.server.listener;
 
-import io.jboot.config.annotation.PropertieConfig;
+import com.jfinal.config.*;
+import com.jfinal.template.Engine;
 
-/**
- * ProxyDatasourceConfig
- */
-@PropertieConfig(prefix = "jboot.datasource.proxy")
-public class ProxyDatasourceConfig extends DatasourceConfig {
 
+public interface JbootAppListener {
+
+    public void onJfinalConstantConfig(Constants constants);
+
+    public void onJfinalRouteConfig(Routes routes);
+
+    public void onJfinalEngineConfig(Engine engine);
+
+    public void onJfinalPluginConfig(Plugins plugins);
+
+    public void onInterceptorConfig(Interceptors interceptors);
+
+    public void onHandlerConfig(Handlers handlers);
+
+    public void onJFinalStarted();
+
+    public void onJFinalStop();
+
+    public void onJbootStarted();
 
 }
