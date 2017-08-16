@@ -15,12 +15,15 @@
  */
 package io.jboot.aop.interceptor.cache;
 
+import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.template.Engine;
+import io.jboot.exception.JbootException;
 import io.jboot.utils.StringUtils;
 
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,8 +41,25 @@ public class Kits {
      */
     static String engineRender(String template, Method method, Object[] arguments) {
 
-        Annotation[][] annotationss = method.getParameterAnnotations();
         Map<String, Object> datas = new HashMap();
+        int x = 0;
+        /**
+         * 在java8下，通过添加 -parameters 进行编译，可以获取 Parameter 的编译前的名字
+         * 否则 只能获取 编译后的名字
+         */
+        for (Parameter p : method.getParameters()) {
+            if (!p.isNamePresent()) {
+                break;
+            }
+            datas.put(p.getName(), arguments[x++]);
+        }
+
+
+        /**
+         * 保证在java8没有添加 -parameters 的时候，可以通过注解的方式获取参数，保证兼容。
+         * 同时，可以通过注解的方式覆盖 默认名称。
+         */
+        Annotation[][] annotationss = method.getParameterAnnotations();
         for (int i = 0; i < annotationss.length; i++) {
             for (int j = 0; j < annotationss[i].length; j++) {
                 Annotation annotation = annotationss[i][j];
@@ -53,10 +73,18 @@ public class Kits {
             }
         }
 
-        return ENGINE.getTemplateByString(template).renderToString(datas);
+        try {
+            return ENGINE.getTemplateByString(template).renderToString(datas);
+        } catch (Throwable throwable) {
+            throw new JbootException("render template is error! template is " + template, throwable);
+        }
+
     }
 
     static String buildCacheKey(String key, Class clazz, Method method, Object[] arguments) {
+
+        clazz = getUsefulClass(clazz);
+
         if (StringUtils.isBlank(key)) {
             return String.format("%s#%s", clazz.getName(), method.getName());
         }
@@ -67,4 +95,14 @@ public class Kits {
 
         return Kits.engineRender(key, method, arguments);
     }
+
+
+    static Class<? extends Model> getUsefulClass(Class c) {
+
+        //ControllerTest$ServiceTest$$EnhancerByGuice$$40471411#hello
+        //com.demo.blog.Blog$$EnhancerByCGLIB$$69a17158
+
+        return c.getName().indexOf("EnhancerBy") == -1 ? c : c.getSuperclass();
+    }
+
 }
