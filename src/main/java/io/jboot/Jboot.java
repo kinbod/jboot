@@ -368,7 +368,7 @@ public class Jboot {
      */
     public JbootRedis getRedis() {
         if (jbootRedis == null) {
-            jbootRedis = JbootRedisManager.me().getReidis();
+            jbootRedis = JbootRedisManager.me().getRedis();
         }
         return jbootRedis;
     }
@@ -412,7 +412,7 @@ public class Jboot {
 
 
     public ISerializer getSerializer() {
-        return SerializerManager.me().getSerializer();
+        return SerializerManager.me().getSerializer(getJbootConfig().getSerializer());
     }
 
 
