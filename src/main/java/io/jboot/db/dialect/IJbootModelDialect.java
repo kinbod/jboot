@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.core.rpc.dubbo;
+package io.jboot.db.dialect;
 
-import io.jboot.config.annotation.PropertieConfig;
+import io.jboot.db.model.Column;
 
-
-@PropertieConfig(prefix = "jboot.rpc.dubbo")
-public class JbootDubborpcConfig {
+import java.util.List;
 
 
-    private String protocolTransporter;
-    private int protocolThreads = 200;
+public interface IJbootModelDialect {
 
-    public String getProtocolTransporter() {
-        return protocolTransporter;
-    }
 
-    public void setProtocolTransporter(String protocolTransporter) {
-        this.protocolTransporter = protocolTransporter;
-    }
+    public String forFindByColumns(String table, String loadColumns, List<Column> columns, String orderBy, Object limit);
 
-    public int getProtocolThreads() {
-        return protocolThreads;
-    }
 
-    public void setProtocolThreads(int protocolThreads) {
-        this.protocolThreads = protocolThreads;
-    }
+    public String forPaginateSelect(String loadColumns);
+
+
+    public String forPaginateFrom(String table, List<Column> columns, String orderBy);
+
+
 }

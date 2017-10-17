@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.core.rpc.dubbo;
-
-import io.jboot.config.annotation.PropertieConfig;
+package io.jboot.db.sharding;
 
 
-@PropertieConfig(prefix = "jboot.rpc.dubbo")
-public class JbootDubborpcConfig {
+import io.jboot.utils.ClassNewer;
 
+public class ShardingRuleFactoryBuilder {
+    private static ShardingRuleFactoryBuilder me = new ShardingRuleFactoryBuilder();
 
-    private String protocolTransporter;
-    private int protocolThreads = 200;
-
-    public String getProtocolTransporter() {
-        return protocolTransporter;
+    public static ShardingRuleFactoryBuilder me() {
+        return me;
     }
 
-    public void setProtocolTransporter(String protocolTransporter) {
-        this.protocolTransporter = protocolTransporter;
-    }
+    public IShardingRuleFactory build(String factory) {
+//        if (StringUtils.isBlank(factory)) {
+//            return new DefaultShardingRuleFactory();
+//        }
 
-    public int getProtocolThreads() {
-        return protocolThreads;
-    }
-
-    public void setProtocolThreads(int protocolThreads) {
-        this.protocolThreads = protocolThreads;
+        return ClassNewer.newInstance(factory);
     }
 }
