@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,7 +58,12 @@ public class JbootCachePutInterceptor implements MethodInterceptor {
                 String.format("CachePut.name()  must not empty in method [%s]!!!", targetClass.getName() + "#" + method.getName()));
 
         String cacheKey = Kits.buildCacheKey(cachePut.key(), targetClass, method, methodInvocation.getArguments());
-        Jboot.me().getCache().put(cacheName, cacheKey, result);
+
+        if (cachePut.liveSeconds() > 0) {
+            Jboot.me().getCache().put(cacheName, cacheKey, result, cachePut.liveSeconds());
+        } else {
+            Jboot.me().getCache().put(cacheName, cacheKey, result);
+        }
         return result;
     }
 

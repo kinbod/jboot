@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ package io.jboot.web.controller;
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
 import com.jfinal.ext.interceptor.NotAction;
+import com.jfinal.kit.HttpKit;
 import com.jfinal.upload.UploadFile;
 import io.jboot.utils.ArrayUtils;
 import io.jboot.utils.RequestUtils;
@@ -25,6 +26,7 @@ import io.jboot.utils.RequestUtils;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class JbootController extends Controller {
@@ -34,6 +36,7 @@ public class JbootController extends Controller {
      *
      * @return
      */
+    @Before(NotAction.class)
     public boolean isMoblieBrowser() {
         return RequestUtils.isMoblieBrowser(getRequest());
     }
@@ -43,6 +46,7 @@ public class JbootController extends Controller {
      *
      * @return
      */
+    @Before(NotAction.class)
     public boolean isWechatBrowser() {
         return RequestUtils.isWechatBrowser(getRequest());
     }
@@ -52,6 +56,7 @@ public class JbootController extends Controller {
      *
      * @return
      */
+    @Before(NotAction.class)
     public boolean isIEBrowser() {
         return RequestUtils.isIEBrowser(getRequest());
     }
@@ -61,6 +66,7 @@ public class JbootController extends Controller {
      *
      * @return
      */
+    @Before(NotAction.class)
     public boolean isAjaxRequest() {
         return RequestUtils.isAjaxRequest(getRequest());
     }
@@ -70,6 +76,7 @@ public class JbootController extends Controller {
      *
      * @return
      */
+    @Before(NotAction.class)
     public boolean isMultipartRequest() {
         return RequestUtils.isMultipartRequest(getRequest());
     }
@@ -106,6 +113,46 @@ public class JbootController extends Controller {
         return RequestUtils.getUserAgent(getRequest());
     }
 
+
+    protected HashMap<String, Object> flash;
+
+    @Before(NotAction.class)
+    public Controller setFlashAttr(String name, Object value) {
+        if (flash == null) {
+            flash = new HashMap<>();
+        }
+
+        flash.put(name, value);
+        return this;
+    }
+
+
+    @Before(NotAction.class)
+    public Controller setFlashMap(Map map) {
+        if (map == null) {
+            throw new NullPointerException("map is null");
+        }
+        if (flash == null) {
+            flash = new HashMap<>();
+        }
+
+        flash.putAll(map);
+        return this;
+    }
+
+
+    @Before(NotAction.class)
+    public <T> T getFlashAttr(String name) {
+        return flash == null ? null : (T) flash.get(name);
+    }
+
+
+    @Before(NotAction.class)
+    public HashMap<String, Object> getFlashAttrs() {
+        return flash;
+    }
+
+
     /**
      * 获取当前网址
      *
@@ -122,12 +169,18 @@ public class JbootController extends Controller {
 
     }
 
+    @Before(NotAction.class)
+    public String getBodyString() {
+        return HttpKit.readData(getRequest());
+    }
+
 
     /**
      * 获取所有上传的文件
      *
      * @return
      */
+    @Before(NotAction.class)
     public HashMap<String, UploadFile> getUploadFilesMap() {
         if (!isMultipartRequest()) {
             return null;
@@ -143,6 +196,5 @@ public class JbootController extends Controller {
         }
         return filesMap;
     }
-
 
 }

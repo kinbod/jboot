@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,11 +15,14 @@
  */
 package io.jboot.codegen;
 
+import com.jfinal.plugin.activerecord.dialect.*;
+import com.jfinal.plugin.activerecord.generator.MetaBuilder;
 import com.jfinal.plugin.activerecord.generator.TableMeta;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.jboot.config.JbootProperties;
-import io.jboot.db.datasource.DatasourceConfig;
+import io.jboot.Jboot;
+import io.jboot.db.datasource.DataSourceConfig;
+import io.jboot.exception.JbootIllegalConfigException;
 import io.jboot.utils.StringUtils;
 
 import javax.sql.DataSource;
@@ -39,17 +42,45 @@ public class CodeGenHelpler {
      * @return
      */
     public static DataSource getDatasource() {
-        DatasourceConfig datasourceConfig = JbootProperties.get(DatasourceConfig.class, "jboot.datasource");
+        DataSourceConfig datasourceConfig = Jboot.config(DataSourceConfig.class, "jboot.datasource");
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(datasourceConfig.getUrl());
         config.setUsername(datasourceConfig.getUser());
         config.setPassword(datasourceConfig.getPassword());
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        config.setDriverClassName("com.mysql.jdbc.Driver");
+        config.setDriverClassName(datasourceConfig.getDriverClassName());
 
         return new HikariDataSource(config);
+    }
+
+
+    public static MetaBuilder createMetaBuilder() {
+        MetaBuilder metaBuilder = new MetaBuilder(getDatasource());
+        DataSourceConfig datasourceConfig = Jboot.config(DataSourceConfig.class, "jboot.datasource");
+        switch (datasourceConfig.getType()) {
+            case DataSourceConfig.TYPE_MYSQL:
+                metaBuilder.setDialect(new MysqlDialect());
+                break;
+            case DataSourceConfig.TYPE_ORACLE:
+                metaBuilder.setDialect(new OracleDialect());
+                break;
+            case DataSourceConfig.TYPE_SQLSERVER:
+                metaBuilder.setDialect(new SqlServerDialect());
+                break;
+            case DataSourceConfig.TYPE_SQLITE:
+                metaBuilder.setDialect(new Sqlite3Dialect());
+                break;
+            case DataSourceConfig.TYPE_ANSISQL:
+                metaBuilder.setDialect(new AnsiSqlDialect());
+                break;
+            case DataSourceConfig.TYPE_POSTGRESQL:
+                metaBuilder.setDialect(new PostgreSqlDialect());
+                break;
+            default:
+                throw new JbootIllegalConfigException("only support datasource type : mysql、orcale、sqlserver、sqlite、ansisql and postgresql, please check your jboot.properties. ");
+        }
+
+        return metaBuilder;
+
     }
 
 

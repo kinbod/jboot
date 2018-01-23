@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ *  http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,24 +15,24 @@
  */
 package io.jboot.component.shiro;
 
-import com.jfinal.aop.Interceptor;
-import com.jfinal.aop.Invocation;
 import com.jfinal.core.Controller;
 import io.jboot.Jboot;
 import io.jboot.component.shiro.processer.AuthorizeResult;
 import io.jboot.utils.StringUtils;
+import io.jboot.web.fixedinterceptor.FixedInterceptor;
+import io.jboot.web.fixedinterceptor.FixedInvocation;
 
 /**
  * Shiro 拦截器
  */
-public class JbootShiroInterceptor implements Interceptor {
+public class JbootShiroInterceptor implements FixedInterceptor {
 
 
     private JbootShiroConfig config = Jboot.config(JbootShiroConfig.class);
 
 
     @Override
-    public void intercept(Invocation inv) {
+    public void intercept(FixedInvocation inv) {
         if (!config.isConfigOK()) {
             inv.invoke();
             return;

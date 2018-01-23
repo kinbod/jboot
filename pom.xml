@@ -6,12 +6,12 @@
 
     <groupId>io.jboot</groupId>
     <artifactId>jboot</artifactId>
-    <version>1.0-rc.1</version>
+    <version>1.2.9</version>
     <packaging>jar</packaging>
 
     <name>jboot</name>
     <url>http://jboot.io</url>
-    <description>jboot is a similar springboot project base on jfinal and undertow.</description>
+    <description>Jboot is a similar SpringCloud project base on JFinal, Dubbo, Hystrix and Undertow.</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -46,11 +46,11 @@
 
     <dependencies>
 
-        <!--<dependency>-->
-        <!--<groupId>com.jfinal</groupId>-->
-        <!--<artifactId>jfinal-java8</artifactId>-->
-        <!--<version>3.2</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>com.jfinal</groupId>
+            <artifactId>jfinal-java8</artifactId>
+            <version>3.3</version>
+        </dependency>
 
         <dependency>
             <groupId>com.jfinal</groupId>
@@ -70,16 +70,10 @@
             </exclusions>
         </dependency>
 
-        <!--<dependency>-->
-        <!--<groupId>joda-time</groupId>-->
-        <!--<artifactId>joda-time</artifactId>-->
-        <!--<version>2.9.9</version>-->
-        <!--</dependency>-->
-
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>2.7.2</version>
+            <version>2.7.6</version>
         </dependency>
 
         <dependency>
@@ -87,7 +81,6 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.42</version>
         </dependency>
-
 
         <dependency>
             <groupId>junit</groupId>
@@ -102,30 +95,43 @@
             <version>3.1.0</version>
         </dependency>
 
-
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
-            <version>1.4.20.Final</version>
+            <version>1.4.21.Final</version>
         </dependency>
 
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-servlet</artifactId>
-            <version>1.4.20.Final</version>
+            <version>1.4.21.Final</version>
         </dependency>
 
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-websockets-jsr</artifactId>
-            <version>1.4.20.Final</version>
+            <version>1.4.21.Final</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.4.8.v20171121</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>9.4.8.v20171121</version>
+            <scope>provided</scope>
         </dependency>
 
 
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-core</artifactId>
-            <version>0.3.1</version>
+            <version>1.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -135,17 +141,13 @@
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.caucho</groupId>
-                    <artifactId>hessian</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.weibo</groupId>
-            <artifactId>motan-transport-netty</artifactId>
-            <version>0.3.1</version>
+            <artifactId>motan-transport-netty4</artifactId>
+            <version>1.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -161,7 +163,7 @@
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-registry-consul</artifactId>
-            <version>0.3.1</version>
+            <version>1.1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -175,6 +177,23 @@
         </dependency>
 
         <dependency>
+            <groupId>com.weibo</groupId>
+            <artifactId>motan-registry-zookeeper</artifactId>
+            <version>1.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.25</version>
@@ -183,14 +202,26 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.39</version>
+            <version>1.2.45</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>23.6-jre</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.6.1</version>
+        </dependency>
+
 
         <dependency>
             <groupId>it.sauronsoftware.cron4j</groupId>
             <artifactId>cron4j</artifactId>
             <version>2.2.5</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -202,28 +233,33 @@
         <dependency>
             <groupId>de.ruedigermoeller</groupId>
             <artifactId>fst</artifactId>
-            <version>2.53</version>
-            <!--<scope>provided</scope>-->
-            <!--如果使用其他序列化组件，和fst冲突，请使用exclusions排除 fst 依赖-->
+            <version>2.57</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>4.0.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.10.3</version>
+            <version>1.11.2</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.aliyun.openservices</groupId>
             <artifactId>ons-client</artifactId>
-            <version>1.6.0.Final</version>
+            <version>1.7.1.Final</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>4.2.0</version>
+            <version>5.0.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -251,28 +287,21 @@
             <version>1.5.12</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>com.dangdang</groupId>-->
-            <!--<artifactId>sharding-jdbc</artifactId>-->
-            <!--<version>1.5.4.1</version>-->
-            <!--<scope>provided</scope>-->
-        <!--</dependency>-->
-
         <dependency>
-            <groupId>com.dangdang</groupId>
+            <groupId>io.shardingjdbc</groupId>
             <artifactId>sharding-jdbc-core</artifactId>
-            <version>1.5.4.1</version>
+            <version>2.0.2</version>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>com.netflix.hystrix</groupId>-->
-        <!--<artifactId>hystrix-javanica</artifactId>-->
-        <!--<version>1.5.12</version>-->
-        <!--</dependency>-->
 
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-core</artifactId>
+            <version>3.2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-graphite</artifactId>
             <version>3.2.5</version>
         </dependency>
 
@@ -283,13 +312,11 @@
             <version>3.2.5</version>
         </dependency>
 
-
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>4.1.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.shiro</groupId>
@@ -306,114 +333,172 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo</artifactId>
-            <version>2.5.6</version>
-            <scope>provided</scope>
+            <version>2.6.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-beans</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
+        <!-- 用于支持 dubbo 的 restful 注解 start -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jdk-http</artifactId>
+            <version>3.1.4.Final</version>
+            <scope>provided</scope>
+        </dependency>
 
-        <!--下面的Jfinal的相关依赖 start-->
         <dependency>
-            <groupId>com.jfinal</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>8.1.8</version>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jaxrs</artifactId>
+            <version>3.1.4.Final</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jsp</artifactId>
-            <version>8.1.8.v20121106</version>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-client</artifactId>
+            <version>3.1.4.Final</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>com.mchange</groupId>
-            <artifactId>c3p0</artifactId>
-            <version>0.9.5.1</version>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-netty4</artifactId>
+            <version>3.1.4.Final</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>druid</artifactId>
-            <version>1.0.29</version>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-jackson-provider</artifactId>
+            <version>3.1.4.Final</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- 用于支持 dubbo 的 restful 注解 end -->
+
         <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.20</version>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentracing</groupId>
+            <artifactId>opentracing-api</artifactId>
+            <version>0.31.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.opentracing.brave</groupId>
+            <artifactId>brave-opentracing</artifactId>
+            <version>0.24.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.zipkin.brave</groupId>
+                    <artifactId>brave-tests</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.zipkin.reporter2</groupId>
+            <artifactId>zipkin-sender-urlconnection</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>3.9.1</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.16</version>
+            <groupId>io.zbus</groupId>
+            <artifactId>zbus</artifactId>
+            <version>0.11.5</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity</artifactId>
-            <version>1.7</version>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>1.5.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.oschina.j2cache</groupId>
+            <artifactId>j2cache-core</artifactId>
+            <version>2.3.4-release</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.apache.velocity</groupId>
-            <artifactId>velocity-tools</artifactId>
-            <version>2.0</version>
+            <groupId>org.apache.qpid</groupId>
+            <artifactId>qpid-client</artifactId>
+            <version>6.3.0</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib-nodep</artifactId>
-            <version>3.2.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.4.3</version>
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-jms_1.1_spec</artifactId>
+            <version>1.1.1</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>2.4.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>2.4.3</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>it.sauronsoftware.cron4j</groupId>
-            <artifactId>cron4j</artifactId>
-            <version>2.2.5</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.zxing</groupId>
-            <artifactId>javase</artifactId>
-            <version>3.2.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>4.3.8.RELEASE</version>
-            <scope>provided</scope>
-        </dependency>
-        <!--以上是编译Jfinal的相关依赖，不用动-->
+
 
 
     </dependencies>
 
 
     <build>
+
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <!-- **/* 写法，可以将各级子目录下的资源文件被打包 -->
+                    <include>**/*.jf</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <excludes>
+                    <exclude>
+                        *.properties
+                    </exclude>
+                </excludes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -432,13 +517,23 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.10</version>
+
+                <executions>
+                    <execution>
+                        <id>package</id>
+                        <goals>
+                            <goal>generate-daemons</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
                 <configuration>
 
 
                     <!-- 根目录 -->
                     <assembleDirectory>${project.build.directory}/app</assembleDirectory>
                     <!-- 打包的jar，以及maven依赖的jar放到这个目录里面 -->
-                    <repositoryName>libs</repositoryName>
+                    <repositoryName>lib</repositoryName>
                     <!-- 可执行脚本的目录 -->
                     <binFolder>bin</binFolder>
                     <!-- 配置classpath 或 webroot目录 -->
@@ -509,8 +604,8 @@
 
                 </configuration>
             </plugin>
-        </plugins>
 
+        </plugins>
     </build>
 
 
@@ -553,7 +648,6 @@
                             <links>
                                 <link>http://jboot.io</link>
                             </links>
-                            <excludePackageNames>com.jfinal</excludePackageNames>
                         </configuration>
 
                         <executions>

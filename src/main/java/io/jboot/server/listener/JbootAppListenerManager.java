@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,11 +15,18 @@
  */
 package io.jboot.server.listener;
 
+import com.google.inject.Binder;
 import com.jfinal.config.*;
 import com.jfinal.log.Log;
 import com.jfinal.template.Engine;
-import io.jboot.utils.ClassNewer;
+import io.jboot.aop.jfinal.JfinalHandlers;
+import io.jboot.aop.jfinal.JfinalPlugins;
+import io.jboot.server.ContextListeners;
+import io.jboot.server.JbootServer;
+import io.jboot.server.Servlets;
+import io.jboot.utils.ClassKits;
 import io.jboot.utils.ClassScanner;
+import io.jboot.web.fixedinterceptor.FixedInterceptors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,13 +55,24 @@ public class JbootAppListenerManager implements JbootAppListener {
                 continue;
             }
 
-            JbootAppListener listener = ClassNewer.newInstance(clazz);
+            JbootAppListener listener = ClassKits.newInstance(clazz, false);
             if (listener != null) {
                 listeners.add(listener);
             }
         }
     }
 
+
+    @Override
+    public void onJbootDeploy(Servlets servlets, ContextListeners listeners) {
+        for (JbootAppListener listener : this.listeners) {
+            try {
+                listener.onJbootDeploy(servlets, listeners);
+            } catch (Throwable ex) {
+                log.error(ex.toString(), ex);
+            }
+        }
+    }
 
     @Override
     public void onJfinalConstantConfig(Constants constants) {
@@ -90,7 +108,7 @@ public class JbootAppListenerManager implements JbootAppListener {
     }
 
     @Override
-    public void onJfinalPluginConfig(Plugins plugins) {
+    public void onJfinalPluginConfig(JfinalPlugins plugins) {
         for (JbootAppListener listener : listeners) {
             try {
                 listener.onJfinalPluginConfig(plugins);
@@ -112,7 +130,18 @@ public class JbootAppListenerManager implements JbootAppListener {
     }
 
     @Override
-    public void onHandlerConfig(Handlers handlers) {
+    public void onFixedInterceptorConfig(FixedInterceptors fixedInterceptors) {
+        for (JbootAppListener listener : listeners) {
+            try {
+                listener.onFixedInterceptorConfig(fixedInterceptors);
+            } catch (Throwable ex) {
+                log.error(ex.toString(), ex);
+            }
+        }
+    }
+
+    @Override
+    public void onHandlerConfig(JfinalHandlers handlers) {
         for (JbootAppListener listener : listeners) {
             try {
                 listener.onHandlerConfig(handlers);
@@ -149,6 +178,28 @@ public class JbootAppListenerManager implements JbootAppListener {
         for (JbootAppListener listener : listeners) {
             try {
                 listener.onJbootStarted();
+            } catch (Throwable ex) {
+                log.error(ex.toString(), ex);
+            }
+        }
+    }
+
+    @Override
+    public void onAppStartBefore(JbootServer jbootServer) {
+        for (JbootAppListener listener : listeners) {
+            try {
+                listener.onAppStartBefore(jbootServer);
+            } catch (Throwable ex) {
+                log.error(ex.toString(), ex);
+            }
+        }
+    }
+
+    @Override
+    public void onGuiceConfigure(Binder binder) {
+        for (JbootAppListener listener : listeners) {
+            try {
+                listener.onGuiceConfigure(binder);
             } catch (Throwable ex) {
                 log.error(ex.toString(), ex);
             }

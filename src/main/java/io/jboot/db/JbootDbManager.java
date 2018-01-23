@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,21 +19,18 @@ import com.jfinal.kit.PathKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.Model;
 import io.jboot.Jboot;
-import io.jboot.db.annotation.Table;
+import io.jboot.core.cache.JbootCache;
 import io.jboot.db.datasource.DataSourceBuilder;
-import io.jboot.db.datasource.DatasourceConfig;
-import io.jboot.db.datasource.DatasourceConfigManager;
+import io.jboot.db.datasource.DataSourceConfig;
+import io.jboot.db.datasource.DataSourceConfigManager;
 import io.jboot.db.dialect.*;
-import io.jboot.exception.JbootException;
+import io.jboot.exception.JbootIllegalConfigException;
 import io.jboot.utils.ArrayUtils;
-import io.jboot.utils.ClassNewer;
-import io.jboot.utils.ClassScanner;
+import io.jboot.utils.ClassKits;
 import io.jboot.utils.StringUtils;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -48,15 +45,53 @@ public class JbootDbManager {
 
     public static JbootDbManager me() {
         if (manager == null) {
-            manager = ClassNewer.singleton(JbootDbManager.class);
+            manager = ClassKits.singleton(JbootDbManager.class);
         }
         return manager;
     }
 
     public JbootDbManager() {
 
-        List<DatasourceConfig> datasourceConfigs = DatasourceConfigManager.me().getDatasourceConfigs();
-        for (DatasourceConfig datasourceConfig : datasourceConfigs) {
+        // 所有的数据源，包含了分库数据源的子数据源
+        Map<String, DataSourceConfig> allDatasourceConfigs = DataSourceConfigManager.me().getDatasourceConfigs();
+
+        // 分库的数据源，一个数据源包含了多个数据源。
+        Map<String, DataSourceConfig> shardingDatasourceConfigs = DataSourceConfigManager.me().getShardingDatasourceConfigs();
+
+        if (shardingDatasourceConfigs != null && shardingDatasourceConfigs.size() > 0) {
+            for (Map.Entry<String, DataSourceConfig> entry : shardingDatasourceConfigs.entrySet()) {
+
+                //子数据源的配置
+                String shardingDatabase = entry.getValue().getShardingDatabase();
+                if (StringUtils.isBlank(shardingDatabase)) {
+                    continue;
+                }
+                Set<String> databases = StringUtils.splitToSet(shardingDatabase, ",");
+                for (String database : databases) {
+                    DataSourceConfig datasourceConfig = allDatasourceConfigs.remove(database);
+                    if (datasourceConfig == null) {
+                        throw new NullPointerException("has no datasource config named " + database + ",plase check your sharding database config");
+                    }
+                    entry.getValue().addChildDatasourceConfig(datasourceConfig);
+                }
+            }
+        }
+
+        //合并后的数据源，包含了分库分表的数据源和正常数据源
+        Map<String, DataSourceConfig> mergeDatasourceConfigs = new HashMap<>();
+        if (allDatasourceConfigs != null) {
+            mergeDatasourceConfigs.putAll(allDatasourceConfigs);
+        }
+
+        if (shardingDatasourceConfigs != null) {
+            mergeDatasourceConfigs.putAll(shardingDatasourceConfigs);
+        }
+
+
+        for (Map.Entry<String, DataSourceConfig> entry : mergeDatasourceConfigs.entrySet()) {
+
+            DataSourceConfig datasourceConfig = entry.getValue();
+
             if (datasourceConfig.isConfigOk()) {
 
                 ActiveRecordPlugin activeRecordPlugin = createRecordPlugin(datasourceConfig);
@@ -78,15 +113,18 @@ public class JbootDbManager {
      * @param datasourceConfig
      * @param activeRecordPlugin
      */
-    private void configSqlTemplate(DatasourceConfig datasourceConfig, ActiveRecordPlugin activeRecordPlugin) {
+    private void configSqlTemplate(DataSourceConfig datasourceConfig, ActiveRecordPlugin activeRecordPlugin) {
         String sqlTemplatePath = datasourceConfig.getSqlTemplatePath();
-        if (sqlTemplatePath != null) {
+        if (StringUtils.isNotBlank(sqlTemplatePath)) {
             if (sqlTemplatePath.startsWith("/")) {
                 activeRecordPlugin.setBaseSqlTemplatePath(datasourceConfig.getSqlTemplatePath());
             } else {
                 activeRecordPlugin.setBaseSqlTemplatePath(PathKit.getRootClassPath() + "/" + datasourceConfig.getSqlTemplatePath());
             }
+        } else {
+            activeRecordPlugin.setBaseSqlTemplatePath(PathKit.getRootClassPath());
         }
+
 
         String sqlTemplateString = datasourceConfig.getSqlTemplate();
         if (sqlTemplateString != null) {
@@ -103,28 +141,28 @@ public class JbootDbManager {
      * @param activeRecordPlugin
      * @param datasourceConfig
      */
-    private void configDialect(ActiveRecordPlugin activeRecordPlugin, DatasourceConfig datasourceConfig) {
+    private void configDialect(ActiveRecordPlugin activeRecordPlugin, DataSourceConfig datasourceConfig) {
         switch (datasourceConfig.getType()) {
-            case DatasourceConfig.TYPE_MYSQL:
+            case DataSourceConfig.TYPE_MYSQL:
                 activeRecordPlugin.setDialect(new JbootMysqlDialect());
                 break;
-            case DatasourceConfig.TYPE_ORACLE:
+            case DataSourceConfig.TYPE_ORACLE:
                 activeRecordPlugin.setDialect(new JbootOracleDialect());
                 break;
-            case DatasourceConfig.TYPE_SQLSERVER:
+            case DataSourceConfig.TYPE_SQLSERVER:
                 activeRecordPlugin.setDialect(new JbootSqlServerDialect());
                 break;
-            case DatasourceConfig.TYPE_SQLITE:
+            case DataSourceConfig.TYPE_SQLITE:
                 activeRecordPlugin.setDialect(new JbootSqlite3Dialect());
                 break;
-            case DatasourceConfig.TYPE_ANSISQL:
+            case DataSourceConfig.TYPE_ANSISQL:
                 activeRecordPlugin.setDialect(new JbootAnsiSqlDialect());
                 break;
-            case DatasourceConfig.TYPE_POSTGRESQL:
+            case DataSourceConfig.TYPE_POSTGRESQL:
                 activeRecordPlugin.setDialect(new JbootPostgreSqlDialect());
                 break;
             default:
-                throw new JbootException("only support datasource type : mysql，orcale，sqlserver，sqlite，ansisql，postgresql");
+                throw new JbootIllegalConfigException("only support datasource type : mysql、orcale、sqlserver、sqlite、ansisql and postgresql, please check your jboot.properties. ");
         }
     }
 
@@ -135,16 +173,24 @@ public class JbootDbManager {
      * @param config
      * @return
      */
-    private ActiveRecordPlugin createRecordPlugin(DatasourceConfig config) {
+    private ActiveRecordPlugin createRecordPlugin(DataSourceConfig config) {
 
         String configName = config.getName();
         DataSource dataSource = new DataSourceBuilder(config).build();
-        String configTable = config.getTable();
-        String excludeTable = config.getExcludeTable();
+        String configTableString = config.getTable();
+        String excludeTableString = config.getExcludeTable();
 
         ActiveRecordPlugin activeRecordPlugin = StringUtils.isNotBlank(configName)
                 ? new ActiveRecordPlugin(configName, dataSource)
                 : new ActiveRecordPlugin(dataSource);
+
+
+        // 设置JFinal使用的cache为jbootCache
+        JbootCache jbootCache = Jboot.me().getCache();
+        if (jbootCache != null) {
+            activeRecordPlugin.setCache(jbootCache);
+        }
+
 
         /**
          * 不需要添加映射的直接返回
@@ -153,46 +199,16 @@ public class JbootDbManager {
             return activeRecordPlugin;
         }
 
-        List<Class<Model>> modelClassList = ClassScanner.scanSubClass(Model.class);
-        if (ArrayUtils.isNullOrEmpty(modelClassList)) {
+        List<TableInfo> tableInfos = TableInfoManager.me().getTablesInfos(configTableString, excludeTableString);
+        if (ArrayUtils.isNullOrEmpty(tableInfos)) {
             return activeRecordPlugin;
         }
 
-
-        Set<String> tables = configTable == null ? null : StringUtils.splitToSet(configTable, ",");
-        Set<String> excludeTables = configTable == null ? null : StringUtils.splitToSet(excludeTable, ",");
-
-        for (Class<?> clazz : modelClassList) {
-            Table tb = clazz.getAnnotation(Table.class);
-            if (tb == null)
-                continue;
-
-            /**
-             * 包含表
-             * 说明该数据源只允许部分表
-             */
-            if (tables != null && !tables.isEmpty()) {
-
-                //如果该数据源的表配置不包含该表，过滤掉
-                if (!tables.contains(tb.tableName())) {
-                    continue;
-                }
-            }
-
-            /**
-             * 排除表
-             * 说明该数据源没有该表
-             */
-            if (excludeTables != null && !excludeTables.isEmpty()) {
-                if (excludeTables.contains(tb.tableName())) {
-                    continue;
-                }
-            }
-
-            if (StringUtils.isNotBlank(tb.primaryKey())) {
-                activeRecordPlugin.addMapping(tb.tableName(), tb.primaryKey(), (Class<? extends Model<?>>) clazz);
+        for (TableInfo ti : tableInfos) {
+            if (StringUtils.isNotBlank(ti.getPrimaryKey())) {
+                activeRecordPlugin.addMapping(ti.getTableName(), ti.getPrimaryKey(), (Class<? extends Model<?>>) ti.getModelClass());
             } else {
-                activeRecordPlugin.addMapping(tb.tableName(), (Class<? extends Model<?>>) clazz);
+                activeRecordPlugin.addMapping(ti.getTableName(), (Class<? extends Model<?>>) ti.getModelClass());
             }
         }
 

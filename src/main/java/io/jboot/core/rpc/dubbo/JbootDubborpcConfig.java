@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,15 +15,44 @@
  */
 package io.jboot.core.rpc.dubbo;
 
-import io.jboot.config.annotation.PropertieConfig;
+import io.jboot.config.annotation.PropertyConfig;
 
 
-@PropertieConfig(prefix = "jboot.rpc.dubbo")
+@PropertyConfig(prefix = "jboot.rpc.dubbo")
 public class JbootDubborpcConfig {
 
 
+    private String protocolName = "dubbo"; //default is dubbo
+    private String protocolServer = "netty"; //default is netty
+    private String protocolContextPath;
     private String protocolTransporter;
     private int protocolThreads = 200;
+
+    private int qosPort;
+
+    public String getProtocolName() {
+        return protocolName;
+    }
+
+    public void setProtocolName(String protocolName) {
+        this.protocolName = protocolName;
+    }
+
+    public String getProtocolServer() {
+        return protocolServer;
+    }
+
+    public void setProtocolServer(String protocolServer) {
+        this.protocolServer = protocolServer;
+    }
+
+    public String getProtocolContextPath() {
+        return protocolContextPath;
+    }
+
+    public void setProtocolContextPath(String protocolContextPath) {
+        this.protocolContextPath = protocolContextPath;
+    }
 
     public String getProtocolTransporter() {
         return protocolTransporter;
@@ -39,5 +68,13 @@ public class JbootDubborpcConfig {
 
     public void setProtocolThreads(int protocolThreads) {
         this.protocolThreads = protocolThreads;
+    }
+
+    public int getQosPort() {
+        return qosPort;
+    }
+
+    public void setQosPort(int qosPort) {
+        this.qosPort = qosPort;
     }
 }

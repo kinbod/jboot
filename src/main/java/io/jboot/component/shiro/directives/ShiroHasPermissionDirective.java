@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,13 +16,12 @@
 package io.jboot.component.shiro.directives;
 
 import com.jfinal.template.Env;
-import com.jfinal.template.expr.ast.Expr;
 import com.jfinal.template.expr.ast.ExprList;
+import com.jfinal.template.io.Writer;
 import com.jfinal.template.stat.Scope;
 import io.jboot.utils.ArrayUtils;
 import io.jboot.web.directive.annotation.JFinalDirective;
 
-import java.io.Writer;
 
 /**
  * 有相应权限
@@ -32,16 +31,22 @@ import java.io.Writer;
  */
 @JFinalDirective("shiroHasPermission")
 public class ShiroHasPermissionDirective extends JbootShiroDirectiveBase {
-    private Expr[] exprs;
 
+    @Override
     public void setExprList(ExprList exprList) {
-        exprs = exprList.getExprArray();
+        if (exprList.getExprArray().length != 1) {
+            throw new IllegalArgumentException("#shiroHasPermission must has one argument");
+        }
+        super.setExprList(exprList);
     }
 
-    public void exec(Env env, Scope scope, Writer writer) {
-        if (getSubject() != null && ArrayUtils.isNotEmpty(exprs))
-            if (getSubject().isPermitted(exprs[0].toString()))
-                stat.exec(env, scope, writer);
+    @Override
+    public void onRender(Env env, Scope scope, Writer writer) {
+        if (getSubject() != null && ArrayUtils.isNotEmpty(exprList.getExprArray()))
+            if (getSubject().isPermitted(exprList.getExprArray()[0].toString())) {
+                renderBody(env, scope, writer);
+            }
+
     }
 
     public boolean hasEnd() {

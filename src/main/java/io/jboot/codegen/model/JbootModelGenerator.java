@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ *  http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,12 +16,10 @@
 package io.jboot.codegen.model;
 
 import com.jfinal.kit.PathKit;
-import com.jfinal.plugin.activerecord.generator.MetaBuilder;
 import com.jfinal.plugin.activerecord.generator.TableMeta;
 import io.jboot.Jboot;
 import io.jboot.codegen.CodeGenHelpler;
 
-import javax.sql.DataSource;
 import java.util.List;
 
 public class JbootModelGenerator {
@@ -33,7 +31,7 @@ public class JbootModelGenerator {
         Jboot.setBootArg("jboot.datasource.user", "root");
 
 
-        String modelPackage = "io.jboot.codegen.test.model";
+        String modelPackage = "io.jboot.codegen.model.test";
         run(modelPackage);
     }
 
@@ -66,8 +64,7 @@ public class JbootModelGenerator {
         System.out.println("start generate...");
         System.out.println("generate dir:" + modelDir);
 
-        DataSource dataSource = CodeGenHelpler.getDatasource();
-        List<TableMeta> tableMetaList = new MetaBuilder(dataSource).build();
+        List<TableMeta> tableMetaList = CodeGenHelpler.createMetaBuilder().build();
         CodeGenHelpler.excludeTables(tableMetaList, excludeTables);
 
 

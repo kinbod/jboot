@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,19 +15,22 @@
  */
 package io.jboot.aop.interceptor.cache;
 
-import com.jfinal.plugin.activerecord.Model;
 import com.jfinal.template.Engine;
 import io.jboot.exception.JbootException;
+import io.jboot.utils.ArrayUtils;
+import io.jboot.utils.ClassKits;
 import io.jboot.utils.StringUtils;
 
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Kits {
+class Kits {
 
     static final Engine ENGINE = new Engine("JbootCacheRender");
 
@@ -83,10 +86,31 @@ public class Kits {
 
     static String buildCacheKey(String key, Class clazz, Method method, Object[] arguments) {
 
-        clazz = getUsefulClass(clazz);
+        clazz = ClassKits.getUsefulClass(clazz);
 
         if (StringUtils.isBlank(key)) {
-            return String.format("%s#%s", clazz.getName(), method.getName());
+
+            if (ArrayUtils.isNullOrEmpty(arguments)) {
+                return String.format("%s#%s", clazz.getName(), method.getName());
+            }
+
+            Class[] paramTypes = method.getParameterTypes();
+            StringBuilder argumentTag = new StringBuilder();
+            int index = 0;
+            for (Object argument : arguments) {
+                String argumentString = converteToString(argument);
+                if (argumentString == null) {
+                    throw new JbootException("not support empty key for annotation @Cacheable,@CacheEvict or @CachePut " +
+                            "at method[" + clazz.getName() + "." + method.getName() + "()] " +
+                            "with argument class:" + argument.getClass().getName() + ", " +
+                            "please config key properties in @Cacheable,@CacheEvict or @CachePut annotation.");
+                }
+                argumentTag.append(paramTypes[index++].getClass().getName()).append(":").append(argumentString).append("-");
+            }
+
+            //remove last chat '-'
+            argumentTag.deleteCharAt(argumentTag.length() - 1);
+            return String.format("%s#%s#%s", clazz.getName(), method.getName(), argumentTag);
         }
 
         if (!key.contains("#(") || !key.contains(")")) {
@@ -97,12 +121,51 @@ public class Kits {
     }
 
 
-    static Class<? extends Model> getUsefulClass(Class c) {
+    static boolean isPrimitive(Class clazz) {
+        return clazz == String.class
+                || clazz == Integer.class
+                || clazz == int.class
+                || clazz == Long.class
+                || clazz == long.class
+                || clazz == Double.class
+                || clazz == double.class
+                || clazz == Float.class
+                || clazz == float.class
+                || clazz == Boolean.class
+                || clazz == boolean.class
+                || clazz == BigDecimal.class
+                || clazz == BigInteger.class
+                || clazz == java.util.Date.class
+                || clazz == java.sql.Date.class
+                || clazz == java.sql.Timestamp.class
+                || clazz == java.sql.Time.class;
 
-        //ControllerTest$ServiceTest$$EnhancerByGuice$$40471411#hello
-        //com.demo.blog.Blog$$EnhancerByCGLIB$$69a17158
+    }
 
-        return c.getName().indexOf("EnhancerBy") == -1 ? c : c.getSuperclass();
+    static String converteToString(Object object) {
+        if (object == null) {
+            return "null";
+        }
+        if (!isPrimitive(object.getClass())) {
+            return null;
+        }
+
+        if (object instanceof java.util.Date) {
+            return String.valueOf(((java.util.Date) object).getTime());
+        }
+
+        if (object instanceof java.sql.Date) {
+            return String.valueOf(((java.sql.Date) object).getTime());
+        }
+        if (object instanceof java.sql.Timestamp) {
+            return String.valueOf(((java.sql.Timestamp) object).getTime());
+        }
+        if (object instanceof java.sql.Time) {
+            return String.valueOf(((java.sql.Time) object).getTime());
+        }
+
+        return String.valueOf(object);
+
     }
 
 }

@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2015-2017, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- * http://www.gnu.org/licenses/lgpl-3.0.txt
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,36 +17,40 @@ package io.jboot.web;
 
 import com.jfinal.config.*;
 import com.jfinal.core.Controller;
+import com.jfinal.json.FastJsonFactory;
 import com.jfinal.json.JsonManager;
-import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
-import com.jfinal.plugin.ehcache.EhCachePlugin;
-import com.jfinal.template.Directive;
 import com.jfinal.template.Engine;
+import com.jfinal.template.ext.directive.NowDirective;
 import com.jfinal.weixin.sdk.api.ApiConfig;
 import com.jfinal.weixin.sdk.api.ApiConfigKit;
 import io.jboot.Jboot;
-import io.jboot.aop.web.WebInterceptorInjectHandler;
+import io.jboot.JbootConstants;
+import io.jboot.aop.jfinal.JfinalHandlers;
+import io.jboot.aop.jfinal.JfinalPlugins;
 import io.jboot.component.log.Slf4jLogFactory;
-import io.jboot.component.metrics.JbootMetricsManager;
-import io.jboot.component.shiro.JbootShiroInterceptor;
+import io.jboot.component.metric.JbootMetricManager;
 import io.jboot.component.shiro.JbootShiroManager;
-import io.jboot.core.cache.JbootCacheConfig;
+import io.jboot.component.swagger.JbootSwaggerConfig;
+import io.jboot.component.swagger.JbootSwaggerController;
+import io.jboot.component.swagger.JbootSwaggerManager;
+import io.jboot.config.JbootConfigManager;
 import io.jboot.core.rpc.JbootrpcManager;
 import io.jboot.db.JbootDbManager;
-import io.jboot.schedule.JbootTaskManager;
+import io.jboot.schedule.JbootScheduleManager;
 import io.jboot.server.listener.JbootAppListenerManager;
-import io.jboot.utils.ClassNewer;
+import io.jboot.utils.ClassKits;
 import io.jboot.utils.ClassScanner;
+import io.jboot.web.cache.ActionCacheHandler;
 import io.jboot.web.controller.annotation.RequestMapping;
-import io.jboot.aop.web.ControllerInjectInterceptor;
-import io.jboot.web.controller.validate.ParaValidateInterceptor;
 import io.jboot.web.directive.annotation.JFinalDirective;
 import io.jboot.web.directive.annotation.JFinalSharedMethod;
 import io.jboot.web.directive.annotation.JFinalSharedObject;
 import io.jboot.web.directive.annotation.JFinalSharedStaticMethod;
+import io.jboot.web.fixedinterceptor.FixedInterceptors;
+import io.jboot.web.handler.JbootActionHandler;
 import io.jboot.web.handler.JbootHandler;
 import io.jboot.web.render.JbootRenderFactory;
 import io.jboot.wechat.JbootAccessTokenCache;
@@ -72,8 +76,7 @@ public class JbootAppConfig extends JFinalConfig {
     @Override
     public void configConstant(Constants constants) {
 
-        PropKit.use("jboot.properties");
-        constants.setRenderFactory(new JbootRenderFactory());
+        constants.setRenderFactory(JbootRenderFactory.me());
         constants.setDevMode(Jboot.me().isDevMode());
         ApiConfigKit.setDevMode(Jboot.me().isDevMode());
 
@@ -86,6 +89,9 @@ public class JbootAppConfig extends JFinalConfig {
         constants.setLogFactory(Slf4jLogFactory.me());
         constants.setMaxPostSize(1024 * 1024 * 2000);
         constants.setReportAfterInvocation(false);
+
+        constants.setControllerFactory(JbootControllerManager.me());
+        constants.setJsonFactory(new FastJsonFactory());
 
         JbootAppListenerManager.me().onJfinalConstantConfig(constants);
     }
@@ -112,7 +118,16 @@ public class JbootAppConfig extends JFinalConfig {
             }
         }
 
+        JbootSwaggerConfig swaggerConfig = Jboot.config(JbootSwaggerConfig.class);
+        if (swaggerConfig.isConfigOk()) {
+            routes.add(swaggerConfig.getPath(), JbootSwaggerController.class, swaggerConfig.getPath());
+        }
+
         JbootAppListenerManager.me().onJfinalRouteConfig(routes);
+
+        for (Routes.Route route : routes.getRouteItemList()) {
+            JbootControllerManager.me().setMapping(route.getControllerKey(), route.getControllerClass());
+        }
 
         routeList.addAll(routes.getRouteItemList());
     }
@@ -122,25 +137,20 @@ public class JbootAppConfig extends JFinalConfig {
 
         /**
          * now 并没有被添加到默认的指令当中
-         * 先添加，后移除，防止在热加载的时候重复添加而产生异常。
          * 查看：EngineConfig
          */
-        engine.addDirective("now", new com.jfinal.template.ext.directive.NowDirective());
+        engine.addDirective("now", NowDirective.class);
 
         List<Class> directiveClasses = ClassScanner.scanClass();
         for (Class clazz : directiveClasses) {
-            JFinalDirective jDirective = (JFinalDirective) clazz.getAnnotation(JFinalDirective.class);
-            if (jDirective != null) {
-                Directive directive = ClassNewer.newInstance((Class<Directive>) clazz);
-                if (directive != null) {
-                    engine.removeDirective(jDirective.value());
-                    engine.addDirective(jDirective.value(), directive);
-                }
+            JFinalDirective jFinalDirective = (JFinalDirective) clazz.getAnnotation(JFinalDirective.class);
+            if (jFinalDirective != null) {
+                engine.addDirective(jFinalDirective.value(), clazz);
             }
 
             JFinalSharedMethod sharedMethod = (JFinalSharedMethod) clazz.getAnnotation(JFinalSharedMethod.class);
             if (sharedMethod != null) {
-                engine.addSharedMethod(ClassNewer.newInstance(clazz));
+                engine.addSharedMethod(ClassKits.newInstance(clazz));
             }
 
             JFinalSharedStaticMethod sharedStaticMethod = (JFinalSharedStaticMethod) clazz.getAnnotation(JFinalSharedStaticMethod.class);
@@ -150,7 +160,7 @@ public class JbootAppConfig extends JFinalConfig {
 
             JFinalSharedObject sharedObject = (JFinalSharedObject) clazz.getAnnotation(JFinalSharedObject.class);
             if (sharedObject != null) {
-                engine.addSharedObject(sharedObject.value(), ClassNewer.newInstance(clazz));
+                engine.addSharedObject(sharedObject.value(), ClassKits.newInstance(clazz));
             }
         }
 
@@ -166,18 +176,7 @@ public class JbootAppConfig extends JFinalConfig {
             plugins.add(arp);
         }
 
-        if (JbootTaskManager.me().isCron4jEnable()) {
-            plugins.add(JbootTaskManager.me().getCron4jPlugin());
-        }
-
-        JbootCacheConfig cacheConfig = Jboot.config(JbootCacheConfig.class);
-        if (JbootCacheConfig.TYPE_EHCACHE.equals(cacheConfig.getType())
-                || JbootCacheConfig.TYPE_EHREDIS.equals(cacheConfig.getType())) {
-
-            plugins.add(new EhCachePlugin());
-        }
-
-        JbootAppListenerManager.me().onJfinalPluginConfig(plugins);
+        JbootAppListenerManager.me().onJfinalPluginConfig(new JfinalPlugins(plugins));
 
     }
 
@@ -185,22 +184,21 @@ public class JbootAppConfig extends JFinalConfig {
     @Override
     public void configInterceptor(Interceptors interceptors) {
 
-
-        interceptors.add(new ControllerInjectInterceptor());
-        interceptors.add(new JbootShiroInterceptor());
-        interceptors.add(new ParaValidateInterceptor());
-
         JbootAppListenerManager.me().onInterceptorConfig(interceptors);
+
+        JbootAppListenerManager.me().onFixedInterceptorConfig(FixedInterceptors.me());
     }
 
     @Override
     public void configHandler(Handlers handlers) {
+
+        handlers.add(new ActionCacheHandler());
         handlers.add(new JbootHandler());
 
         //用于对jfinal的拦截器进行注入
-        handlers.add(new WebInterceptorInjectHandler());
+        handlers.setActionHandler(new JbootActionHandler());
 
-        JbootAppListenerManager.me().onHandlerConfig(handlers);
+        JbootAppListenerManager.me().onHandlerConfig(new JfinalHandlers(handlers));
     }
 
     @Override
@@ -212,18 +210,18 @@ public class JbootAppConfig extends JFinalConfig {
         /**
          * 初始化
          */
-        JbootMetricsManager.me().init();
         JbootrpcManager.me().init();
         JbootShiroManager.me().init(routeList);
+        JbootScheduleManager.me().init();
+        JbootMetricManager.me().init();
+        JbootSwaggerManager.me().init();
 
         /**
          * 发送启动完成通知
          */
-        Jboot.me().sendEvent(Jboot.EVENT_STARTED, null);
+        Jboot.sendEvent(JbootConstants.EVENT_STARTED, null);
 
         JbootAppListenerManager.me().onJFinalStarted();
-        JbootAppListenerManager.me().onJbootStarted();
-
     }
 
     @Override
@@ -239,7 +237,7 @@ public class JbootAppConfig extends JFinalConfig {
                 }
             }
         }
-
+        JbootConfigManager.me().destroy();
         JbootAppListenerManager.me().onJFinalStop();
     }
 

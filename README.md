@@ -1,89 +1,103 @@
 
+## [中文文档](./README-ZH.md)
+## what is JBoot 
 
-## JBoot 是什么
+Jboot，she is born for distributed project and micro service.
 
-Jboot，专为大型分布式项目和微服务而生。
+QQ-Group： 601440615
 
-JBoot并不是一个新的发明，而是一个整理了大型分布式常用的技术解决方案，而形成的一个"最佳实践"。
-
-例如：
-
-* JBoot的RPC的通过新浪开源的成熟的框架motan（支持其他实现方案grpc、dubbo等）来实现的；
-* ORM + MVC 是通过著名的JFinal来实现的；
-* 缓存部分则是通过 EHcache 和 Redis 来实现的；
-* 容错和隔离则是通过Netflix公司的Hystrix来实现的等等。
-
-QQ交流群： 601440615
-
-## 开始第一个Jboot应用
-### 1、添加 maven 依赖
+## Jboot maven dependency
 
 ```xml
 <dependency>
     <groupId>io.jboot</groupId>
     <artifactId>jboot</artifactId>
-    <version>1.0-rc.1</version>
+    <version>1.2.9</version>
 </dependency>
 
 ```
-注意：有某些时候，Jboot版本已经更新，但是文档没有更新的情况下，请自行查看maven中央仓库最新的版本。
 
-### 2、编写控制器 HelloController
+## Jboot core component
 
-```java
-@RequestMapping("/")
-public class HelloController extend JbootController{
-   public void index(){
-        renderText("hello jboot");
-   }
-}
-```
-
-### 3、启动应用
-
-```java
-public class MyStarter{
-   public static void main(String [] args){
-       Jboot.run(args);
-   }
-}
-```
-
-### 4、浏览器访问
-
-* 访问网址：http://127.0.0.1:8080
-* 浏览器显示： hello jboot
-
-## Jboot的核心组件
-通过以上几个步骤，我们就能完成一个Jboot应用的demo实例。然而在大型的分布式应用中，这些远远不够。因此，Jboot还提供了在分布式应用常用的分布式组件。
-
-* MVC
-* 安全控制 （基于shiro）
-* ORM 
-* AOP （基于guice）
-* RPC远程调用 （支持可选方案有 motan，dubbo等）
-* MQ消息队列 (支持可选方案有：redis、activemq，rabbitmq等)
-* 分布式缓存
-* 分布式session
-* 调用监控 (基于metrics)
-* 容错隔离（基于 hystrix）
-* 轻量级的Http客户端（包含了get、post请求，文件上传和下载等）
-* 分布式下的微信和微信第三方
-* 自定义序列化组件
-* 事件机制
-* 等等
-
-## 文档
-
-请查看[JBoot文档](./DOC.md)
+* [x] MVC （base on JFinal）
+* [x] ORM （base on JFinal）
+* [x] AOP （base on Guice）
+* security control
+    * [x] shiro
+* RPC (Remote Procedure Call) 
+    * [x] motan
+    * [x] dubbo
+    * [ ] grpc
+    * [x] zbus
+* MQ 
+    * [x] rabbitmq
+    * [x] redismq
+    * [x] Aliyun MQ
+    * [ ] activemq
+    * [x] zbus
+* cache
+    * [x] ehcache
+    * [x] redis
+    * [x] ehredis (tow level distributed cache)
+    * [x] J2Cache ([https://gitee.com/ld/J2Cache](https://gitee.com/ld/J2Cache))
+* [x] distributed session
+* [x] distributed lock
+* task schedule
+    * [x] cron4j
+    * [x] ScheduledThreadPoolExecutor
+    * [x] distributed task schedule (base on redis)
+* [x] component procedure monitor (base on metrics)
+* [x] Hystrix control
+* [x] Opentracing
+    * [x] zipkin
+    * [x] skywalking
+* [x] distributed config center
+* [x] swagger api
+* [x] HttpClient
+    * [x] httpUrlConnection
+    * [x] okHttp
+    * [ ] httpClient
+* [x] wechat api
+* [x] serialization component 
+* [x] event mechanism
+* [x] code generator
 
 
-## 联系作者
-* qq:1506615067
-* wechat：wx198819880
-* email:fuhai999#gmail.com
+## document
 
-## QQ群
+document url ： [click here](./DOC.md)
 
-Jboot交流QQ群：601440615 ，欢迎加入讨论Jboot和微服务。
+#### document directories 
+
+- [JBoot core component](./DOC.md#jboot核心组件)
+- [MVC](./DOC.md#mvc)
+- [security control](./DOC.md#安全控制)
+- [ORM](./DOC.md#orm)
+- [AOP](./DOC.md#aop)
+- [RPC](./DOC.md#rpc远程调用)
+- [MQ](./DOC.md#mq消息队列)
+- [Cache](./DOC.md#cache缓存)
+- [http Client](./DOC.md#http客户端)
+- [metrics monitor](./DOC.md#metrics数据监控)
+- [Hystrix control](./DOC.md#容错与隔离)
+- [Opentracing](./DOC.md#opentracing数据追踪)	
+- [distributed config center](./DOC.md#统一配置中心)	
+- [Swagger api](./DOC.md#swagger-api自动生成)
+- Other
+	- [SPI](./DOC.md#spi扩展)
+	- [JbootEvnet](./DOC.md#jbootEvnet事件机制)
+	- [properties reader](./DOC.md#配置文件)
+	- [code generator](./DOC.md#代码生成器)
+- [project build](./DOC.md#项目构建)
+- [contact author](./DOC.md#联系作者)
+- [FAQ](./DOC.md#常见问题)
+
+
+## Contributors
+* Michael Yang（EMAIL:fuhai999@gmail.com，GITHUB:[@yangfuhai](https://github.com/yangfuhai))
+* Rlax（EMAIL:popkids@qq.com，GITHUB:[@pkanyue](https://github.com/pkanyue))
+* 徐海峰（EMAIL:xhf6731202@126.com，GITHUB:[@xhf6731202](https://github.com/xhf6731202)）
+* 周洛熙 (EMAIL:78793093@qq.com，GITHUB:[@zhoufengjob](https://github.com/zhoufengjob))
+
+
 
