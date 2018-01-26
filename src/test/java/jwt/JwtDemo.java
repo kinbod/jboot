@@ -13,25 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.component.opentracing;
+package jwt;
 
-import io.opentracing.Tracer;
-//import org.skywalking.apm.toolkit.opentracing.SkywalkingTracer;
+import io.jboot.Jboot;
+import io.jboot.web.controller.JbootController;
+import io.jboot.web.controller.annotation.RequestMapping;
 
-public class SkywalkingTracerFactory implements TracerFactory {
+
+@RequestMapping("/jwt")
+public class JwtDemo extends JbootController {
 
 
-    private Tracer tracer;
-
-    public SkywalkingTracerFactory() {
-
-        // doc : https://github.com/apache/incubator-skywalking/blob/master/docs/cn/skywalking-opentracing-CN.md
-//        tracer = new SkywalkingTracer();
+    public static void main(String[] args) {
+        Jboot.setBootArg("jboot.web.jwt.secret", "mySecret");
+        Jboot.run(args);
     }
 
 
-    @Override
-    public Tracer getTracer() {
-        return tracer;
+    public void index() {
+        setJwtAttr("key1", "test");
+        setJwtAttr("key2", "test");
+        setJwtAttr("key3", "test");
+        renderText("ok，请查看http header");
     }
+
+    public void show() {
+        String value = getJwtPara("key1");
+        renderText("jwt value : " + value);
+    }
+
+
 }

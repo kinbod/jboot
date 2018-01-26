@@ -22,6 +22,7 @@ import com.jfinal.kit.HttpKit;
 import com.jfinal.upload.UploadFile;
 import io.jboot.utils.ArrayUtils;
 import io.jboot.utils.RequestUtils;
+import io.jboot.web.jwt.JwtManager;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -30,6 +31,9 @@ import java.util.Map;
 
 
 public class JbootController extends Controller {
+
+    private static final Object NULL_OBJ = new Object();
+    private static final String BODY_STRING_ATTR = "__body_str";
 
     /**
      * 是否是手机浏览器
@@ -153,6 +157,50 @@ public class JbootController extends Controller {
     }
 
 
+    protected HashMap<String, Object> jwts;
+
+    @Before(NotAction.class)
+    public Controller setJwtAttr(String name, Object value) {
+        if (jwts == null) {
+            jwts = new HashMap<>();
+        }
+
+        jwts.put(name, value);
+        return this;
+    }
+
+
+    @Before(NotAction.class)
+    public Controller setJwtMap(Map map) {
+        if (map == null) {
+            throw new NullPointerException("map is null");
+        }
+        if (jwts == null) {
+            jwts = new HashMap<>();
+        }
+
+        jwts.putAll(map);
+        return this;
+    }
+
+
+    @Before(NotAction.class)
+    public <T> T getJwtAttr(String name) {
+        return jwts == null ? null : (T) jwts.get(name);
+    }
+
+
+    @Before(NotAction.class)
+    public HashMap<String, Object> geJwtAttrs() {
+        return jwts;
+    }
+
+    @Before(NotAction.class)
+    public <T> T getJwtPara(String name) {
+        return JwtManager.me().getPara(name);
+    }
+
+
     /**
      * 获取当前网址
      *
@@ -171,7 +219,23 @@ public class JbootController extends Controller {
 
     @Before(NotAction.class)
     public String getBodyString() {
-        return HttpKit.readData(getRequest());
+        Object object = getAttr(BODY_STRING_ATTR);
+        if (object == NULL_OBJ) {
+            return null;
+        }
+
+        if (object != null) {
+            return (String) object;
+        }
+
+        object = HttpKit.readData(getRequest());
+        if (object == null) {
+            setAttr(BODY_STRING_ATTR, NULL_OBJ);
+        } else {
+            setAttr(BODY_STRING_ATTR, object);
+        }
+
+        return (String) object;
     }
 
 
