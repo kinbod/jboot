@@ -20,10 +20,10 @@ package io.jboot.web.limitation;
  * @version V1.0
  * @Package io.jboot.web.limitation
  */
-public class LimitAction {
+public class LimitRenderType {
 
     public static final String TEXT = "text";
-    public static final String JSON = "josn";
+    public static final String JSON = "json";
     public static final String RENDER = "render";
     public static final String REDIRECT = "redirect";
 }
