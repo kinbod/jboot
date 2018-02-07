@@ -19,6 +19,7 @@ import io.jboot.Jboot;
 import io.jboot.web.controller.JbootController;
 import io.jboot.web.controller.annotation.RequestMapping;
 import io.jboot.web.limitation.LimitRenderType;
+import io.jboot.web.limitation.annotation.EnableConcurrencyRateLimit;
 import io.jboot.web.limitation.annotation.EnableIpRateLimit;
 import io.jboot.web.limitation.annotation.EnableRequestRateLimit;
 import io.jboot.web.limitation.annotation.EnableUserRateLimit;
@@ -43,6 +44,19 @@ public class LimitationDemo extends JbootController {
     @EnableRequestRateLimit(rate = 1)
     public void request() {
         renderText("request() render ok");
+    }
+
+    /**
+     * 所有的请求，并发量为1个
+     */
+    @EnableConcurrencyRateLimit(rate = 1)
+    public void con() {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        renderText("con() render ok");
     }
 
     /**
