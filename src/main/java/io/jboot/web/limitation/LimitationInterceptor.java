@@ -38,10 +38,11 @@ public class LimitationInterceptor implements FixedInterceptor {
         JbootLimitationManager manager = JbootLimitationManager.me();
 
         LimitationInfo info = manager.getLimitationInfo(inv.getActionKey());
-        if (info == null) {
+        if (info == null || !info.isEnable()) {
             inv.invoke();
             return;
         }
+
 
         if (doIntercept(inv, info)) {
             renderLimitation(inv.getController(), info);
@@ -50,8 +51,8 @@ public class LimitationInterceptor implements FixedInterceptor {
 
         try {
             inv.invoke();
-        }finally {
-            if (info.getType() == LimitationInfo.TYPE_CONCURRENCY){
+        } finally {
+            if (LimitationInfo.TYPE_CONCURRENCY.equals(info.getType())) {
                 SEMAPHORE_THREAD_LOCAL.get().release();
                 SEMAPHORE_THREAD_LOCAL.remove();
             }
@@ -113,7 +114,7 @@ public class LimitationInterceptor implements FixedInterceptor {
 
         double rate = info.getRate();
         if (rate <= 0 || rate >= 1000) {
-            throw new IllegalArgumentException("@EnableIpRateLimit.rate must > 0 and < 1000");
+            throw new IllegalArgumentException("@EnablePerIpLimit.rate must > 0 and < 1000");
         }
 
         double interval = 1000 / rate;
@@ -140,7 +141,7 @@ public class LimitationInterceptor implements FixedInterceptor {
 
         double rate = info.getRate();
         if (rate <= 0 || rate >= 1000) {
-            throw new IllegalArgumentException("@EnableIpRateLimit.rate must > 0 and < 1000");
+            throw new IllegalArgumentException("@EnablePerUserLimit.rate must > 0 and < 1000");
         }
 
         double interval = 1000 / rate;

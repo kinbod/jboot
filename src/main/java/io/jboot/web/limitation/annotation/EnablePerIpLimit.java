@@ -25,7 +25,7 @@ import java.lang.annotation.*;
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
-public @interface EnableIpRateLimit {
+public @interface EnablePerIpLimit {
 
     double rate(); //每秒钟允许通过的次数
 

@@ -13,33 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.db.annotation;
-
-import io.shardingjdbc.core.api.config.strategy.ShardingStrategyConfiguration;
+package io.jboot.web.limitation.annotation;
 
 import java.lang.annotation.*;
 
+/**
+ * @author Michael Yang 杨福海 （fuhai999@gmail.com）
+ * @version V1.0
+ * @Package io.jboot.web.limitation.annotation
+ */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-public @interface Table {
+@Target({ElementType.METHOD})
+public @interface EnableRequestLimit {
 
-    String tableName();
+    double rate(); //每秒钟允许通过的次数
 
-    String primaryKey() default "";
+    /**
+     * 被限流后给用户的反馈操作
+     * 支持：json，render，text，redirect
+     *
+     * @return
+     */
+    String renderType() default "";
 
-    Class<? extends ShardingStrategyConfiguration> databaseShardingStrategyConfig() default ShardingStrategyConfiguration.class;
-
-    Class<? extends ShardingStrategyConfiguration> tableShardingStrategyConfig() default ShardingStrategyConfiguration.class;
-
-    String actualDataNodes() default "";
-
-    String keyGeneratorColumnName() default "";
-
-    Class keyGeneratorClass() default Void.class;
-
-    String datasource() default "";
-    
-    String exDatasource() default "";
+    /**
+     * 被限流后给客户端的响应，响应的内容根据 action 的类型来渲染
+     *
+     * @return
+     */
+    String renderContent() default "";
 
 }

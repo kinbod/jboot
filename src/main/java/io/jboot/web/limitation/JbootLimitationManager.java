@@ -22,10 +22,10 @@ import com.jfinal.config.Routes;
 import com.jfinal.core.Controller;
 import io.jboot.Jboot;
 import io.jboot.utils.ArrayUtils;
-import io.jboot.web.limitation.annotation.EnableConcurrencyRateLimit;
-import io.jboot.web.limitation.annotation.EnableIpRateLimit;
-import io.jboot.web.limitation.annotation.EnableRequestRateLimit;
-import io.jboot.web.limitation.annotation.EnableUserRateLimit;
+import io.jboot.web.limitation.annotation.EnableConcurrencyLimit;
+import io.jboot.web.limitation.annotation.EnablePerIpLimit;
+import io.jboot.web.limitation.annotation.EnableRequestLimit;
+import io.jboot.web.limitation.annotation.EnablePerUserLimit;
 import io.jboot.web.utils.ControllerUtils;
 
 import java.lang.annotation.Annotation;
@@ -108,41 +108,42 @@ public class JbootLimitationManager {
                 String actionKey = ControllerUtils.createActionKey(controllerClass, method, controllerKey);
 
                 for (Annotation annotation : allAnnotations) {
-                    if (annotation.annotationType() == EnableConcurrencyRateLimit.class) {
-                        concurrencyRates.put(actionKey, new LimitationInfo((EnableConcurrencyRateLimit) annotation));
-                    } else if (annotation.annotationType() == EnableIpRateLimit.class) {
-                        ipRates.put(actionKey, new LimitationInfo((EnableIpRateLimit) annotation));
-                    } else if (annotation.annotationType() == EnableRequestRateLimit.class) {
-                        requestRates.put(actionKey, new LimitationInfo((EnableRequestRateLimit) annotation));
-                    } else if (annotation.annotationType() == EnableUserRateLimit.class) {
-                        userRates.put(actionKey, new LimitationInfo((EnableUserRateLimit) annotation));
+                    if (annotation.annotationType() == EnableConcurrencyLimit.class) {
+                        concurrencyRates.put(actionKey, new LimitationInfo((EnableConcurrencyLimit) annotation));
+                    } else if (annotation.annotationType() == EnablePerIpLimit.class) {
+                        ipRates.put(actionKey, new LimitationInfo((EnablePerIpLimit) annotation));
+                    } else if (annotation.annotationType() == EnableRequestLimit.class) {
+                        requestRates.put(actionKey, new LimitationInfo((EnableRequestLimit) annotation));
+                    } else if (annotation.annotationType() == EnablePerUserLimit.class) {
+                        userRates.put(actionKey, new LimitationInfo((EnablePerUserLimit) annotation));
                     }
                 }
             }
         }
     }
 
-    public LimitationInfo getLimitationInfo(String actionKey){
+    public LimitationInfo getLimitationInfo(String actionKey) {
         LimitationInfo info = concurrencyRates.get(actionKey);
 
-        if(info != null){
+        if (info != null) {
             return info;
         }
 
         info = requestRates.get(actionKey);
 
-        if(info != null){
+        if (info != null) {
             return info;
         }
 
         info = ipRates.get(actionKey);
 
-        if(info != null){
+        if (info != null) {
             return info;
         }
 
         return userRates.get(actionKey);
     }
+
 
 
     private JbootLimitationManager() {
@@ -177,7 +178,7 @@ public class JbootLimitationManager {
     }
 
     public Semaphore initSemaphore(String target, double rate) {
-        Semaphore semaphore = new Semaphore((int)rate);
+        Semaphore semaphore = new Semaphore((int) rate);
         concurrencyRateLimiterMap.put(target, semaphore);
         return semaphore;
     }
@@ -222,5 +223,22 @@ public class JbootLimitationManager {
 
     public String getLimitView() {
         return limitView;
+    }
+
+
+    public Map<String, LimitationInfo> getConcurrencyRates() {
+        return concurrencyRates;
+    }
+
+    public Map<String, LimitationInfo> getIpRates() {
+        return ipRates;
+    }
+
+    public Map<String, LimitationInfo> getRequestRates() {
+        return requestRates;
+    }
+
+    public Map<String, LimitationInfo> getUserRates() {
+        return userRates;
     }
 }

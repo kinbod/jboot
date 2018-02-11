@@ -15,24 +15,26 @@
  */
 package io.jboot.web.limitation;
 
-import io.jboot.web.limitation.annotation.EnableConcurrencyRateLimit;
-import io.jboot.web.limitation.annotation.EnableIpRateLimit;
-import io.jboot.web.limitation.annotation.EnableRequestRateLimit;
-import io.jboot.web.limitation.annotation.EnableUserRateLimit;
+import io.jboot.web.limitation.annotation.EnableConcurrencyLimit;
+import io.jboot.web.limitation.annotation.EnablePerIpLimit;
+import io.jboot.web.limitation.annotation.EnableRequestLimit;
+import io.jboot.web.limitation.annotation.EnablePerUserLimit;
+
+import java.io.Serializable;
 
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
  * @Package io.jboot.web.limitation
  */
-public class LimitationInfo {
+public class LimitationInfo implements Serializable {
 
-    public static final int TYPE_IP = 1;
-    public static final int TYPE_REQUEST = 2;
-    public static final int TYPE_USER = 3;
-    public static final int TYPE_CONCURRENCY = 4;
+    public static final String TYPE_IP = "ip";
+    public static final String TYPE_REQUEST = "request";
+    public static final String TYPE_USER = "user";
+    public static final String TYPE_CONCURRENCY = "concurrency";
 
-    private int type;
+    private String type;
 
     private double rate; //每秒钟允许通过的次数
 
@@ -51,30 +53,33 @@ public class LimitationInfo {
      */
     private String renderContent;
 
-    public LimitationInfo(){}
+    private boolean enable = true;
 
-    public LimitationInfo(EnableConcurrencyRateLimit limit){
+    public LimitationInfo() {
+    }
+
+    public LimitationInfo(EnableConcurrencyLimit limit) {
         this.type = TYPE_CONCURRENCY;
         this.rate = limit.rate();
         this.renderType = limit.renderType();
         this.renderContent = limit.renderContent();
     }
 
-    public LimitationInfo(EnableIpRateLimit limit){
+    public LimitationInfo(EnablePerIpLimit limit) {
         this.type = TYPE_IP;
         this.rate = limit.rate();
         this.renderType = limit.renderType();
         this.renderContent = limit.renderContent();
     }
 
-    public LimitationInfo(EnableRequestRateLimit limit){
+    public LimitationInfo(EnableRequestLimit limit) {
         this.type = TYPE_REQUEST;
         this.rate = limit.rate();
         this.renderType = limit.renderType();
         this.renderContent = limit.renderContent();
     }
 
-    public LimitationInfo(EnableUserRateLimit limit){
+    public LimitationInfo(EnablePerUserLimit limit) {
         this.type = TYPE_USER;
         this.rate = limit.rate();
         this.renderType = limit.renderType();
@@ -82,11 +87,11 @@ public class LimitationInfo {
     }
 
 
-    public int getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -112,5 +117,13 @@ public class LimitationInfo {
 
     public void setRenderContent(String renderContent) {
         this.renderContent = renderContent;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }
