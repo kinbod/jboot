@@ -1,3 +1,22 @@
+jboot-1.3.5:
+修复：Db.use() 总是使用最后一个的问题
+修复：jboot.datasource.table 和 jboot.datasource.extable 配置无效的问题
+修复：sharding-jdbc 使用 hintManager 必须关闭 hystrix，否则无法使用的问题
+文档：新增websocket相关的文档
+其他：更新依赖，升级sharding-jdbc到最新版本
+
+
+
+jboot-1.3.4:
+新增：model 查询的时候默认通过hystrix进行管理
+新增：db查询Record的时候，默认通过Hystrix进行管理
+新增：在多数据源的情况下，@Table注解添加DataSource配置的支持，可以指定在哪些数据源下
+修复：jboot.rpc.requestTimeout 对dubbo无效的问题
+修复：swagger页面出现 "Unknown Type : ref" 问题。
+文档：更新aop相关文档
+其他：更新相关依赖，hikariCP->2.7.7;druid->1.1.8;metrics->4.0.2;zipkin-sender->2.3.2
+
+
 jboot-1.3.3:
 新增：流量控制开关，当网站上线的时候不用重启自由开启关闭。
 新增：流量控制设置，当网站上线的时候可以自由设置流量控制大小。
