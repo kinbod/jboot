@@ -16,33 +16,36 @@
 package io.jboot.aop.interceptor.metric;
 
 
-import com.codahale.metrics.Meter;
+import com.codahale.metrics.Counter;
 import io.jboot.Jboot;
-import io.jboot.component.metric.annotation.EnableMetricMeter;
+import io.jboot.component.metric.annotation.EnableMetricConcurrency;
 import io.jboot.utils.StringUtils;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * 用于在AOP拦截，并通过Metrics的Meter进行统计
+ * 用于在AOP拦截，并通过Metrics的Conter进行统计
  */
-public class JbootMetricMeterAopInterceptor implements MethodInterceptor {
+public class JbootMetricConcurrencyAopInterceptor implements MethodInterceptor {
 
-    private static final String suffix = ".meter";
+    private static final String suffix = ".concurrency";
 
     @Override
     public Object invoke(MethodInvocation methodInvocation) throws Throwable {
 
-        EnableMetricMeter annotation = methodInvocation.getThis().getClass().getAnnotation(EnableMetricMeter.class);
+        EnableMetricConcurrency annotation = methodInvocation.getThis().getClass().getAnnotation(EnableMetricConcurrency.class);
 
         String name = StringUtils.isBlank(annotation.value())
                 ? methodInvocation.getThis().getClass().getName() + "." + methodInvocation.getMethod().getName() + suffix
                 : annotation.value();
 
-        Meter meter = Jboot.me().getMetric().meter(name);
-        meter.mark();
-        return methodInvocation.proceed();
-
+        Counter counter = Jboot.me().getMetric().counter(name);
+        try {
+            counter.inc();
+            return methodInvocation.proceed();
+        } finally {
+            counter.dec();
+        }
 
     }
 }

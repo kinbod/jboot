@@ -37,11 +37,14 @@ import java.util.List;
 
 public class JbootMetricManager {
 
-    private static JbootMetricManager me = new JbootMetricManager();
     private static final Log LOG = Log.getLog(JbootMetricManager.class);
 
+    private static JbootMetricManager me;
 
     public static JbootMetricManager me() {
+        if (me == null) {
+            me = new JbootMetricManager();
+        }
         return me;
     }
 
@@ -54,14 +57,9 @@ public class JbootMetricManager {
         metricRegistry = new MetricRegistry();
         healthCheckRegistry = new HealthCheckRegistry();
 
-        init();
-    }
-
-
-    public void init() {
         List<JbootMetricReporter> reporters = getReporters();
         if (ArrayUtils.isNullOrEmpty(reporters)) {
-            LOG.warn("metrics reporter is empty in application.");
+            LOG.warn("metrics reporter is empty . please config \"jboot.metric.reporter = xxx\" in jboot.properties ");
             return;
         }
 

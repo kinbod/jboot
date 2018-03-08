@@ -111,7 +111,7 @@
 <dependency>
     <groupId>io.jboot</groupId>
     <artifactId>jboot</artifactId>
-    <version>1.3.5</version>
+    <version>1.3.7</version>
 </dependency>
 ```
 #### 编写helloworld
@@ -227,6 +227,15 @@ setFlashAttr 是用于对 redirect 之后的页面进行渲染。
 
 **JWT简介：**  Json web token (JWT), 是为了在网络应用环境间传递声明而执行的一种基于JSON的开放标准（[RFC 7519](https://tools.ietf.org/html/rfc7519)).该token被设计为紧凑且安全的，特别适用于分布式站点的单点登录（SSO）场景。JWT的声明一般被用来在身份提供者和服务提供者间传递被认证的用户身份信息，以便于从资源服务器获取资源，也可以增加一些额外的其它业务逻辑所必须的声明信息，该token也可直接被用于认证，也可被加密。
 
+*JWT的相关配置*
+
+|配置属性 | 描述 |
+| ------------- | -----|
+| jboot.web.jwt.httpHeaderName| 配置JWT的http头的key，默认为JWT |
+| jboot.web.jwt.secret | 配置JWT的密钥 |
+| jboot.web.jwt.validityPeriod | 配置JWT的过期时间，默认不过期 |
+
+
 ### @RquestMapping
 RquestMapping是请求映射，也就是通过@RquestMapping注解，可以让某个请求映射到指定的控制器Controller里去。
 
@@ -239,7 +248,7 @@ RquestMapping是请求映射，也就是通过@RquestMapping注解，可以让�
 
 ```java
 @RequestMapping("/")
-public class HelloController extend JbootController{
+public class HelloController extends JbootController{
    public void index(){
         renderText("hello jboot");
    }
@@ -962,9 +971,9 @@ jboot.web.jwt.secret = your_secret
 
 # ORM
 ## 配置
-在使用数据库之前，需要给Jboot应用做一些配置，实际上，在任何的需要到数据库的应用中，都需要给应用程序做一些配置，让应用程序知道去哪里读取数据。
+在使用数据库之前，需要给Jboot应用做一些配置，实际上，在任何需要用到数据库的应用中，都需要给应用程序做一些配置，让应用程序知道去哪里读取数据。
 
-由于Jboot的数据库读取是依赖于JFinal，所以实际上JFinal只是的数据库类型，Jboot都会支持，比如常用的数据库类型有：
+由于Jboot的数据库读取是依赖于JFinal，所以实际上只要是JFinal支持的数据库类型，Jboot都会支持，比如常用的数据库类型有：
 
 * Mysql
 * Oracle
@@ -1478,7 +1487,7 @@ https://www.consul.io
 ##### 启动consul
 
 ```java
-consul -agent dev
+consul agent -dev
 ```
 
 #### zookeeper
@@ -2458,14 +2467,4 @@ core framework:
 		
 		
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-
+	

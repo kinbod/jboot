@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package service;
+package io.jboot.component.metric.annotation;
 
-public interface CategoryService {
+import java.lang.annotation.*;
 
 
-    public String hello(String text);
+@Documented
+@Target(ElementType.METHOD)
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+public @interface EnableMetricConcurrency {
+
+    String value() default "";
 
 }
