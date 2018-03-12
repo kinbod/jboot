@@ -111,7 +111,7 @@
 <dependency>
     <groupId>io.jboot</groupId>
     <artifactId>jboot</artifactId>
-    <version>1.3.7</version>
+    <version>1.3.8</version>
 </dependency>
 ```
 #### 编写helloworld
@@ -1488,6 +1488,12 @@ https://www.consul.io
 
 ```java
 consul agent -dev
+```
+
+允许其他机器访问consul:
+
+```java
+consul agent -dev -bind=0.0.0.0
 ```
 
 #### zookeeper
