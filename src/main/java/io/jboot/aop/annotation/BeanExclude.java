@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * <p>
- *  http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.core.rpc.annotation;
-
-import com.google.inject.BindingAnnotation;
+package io.jboot.aop.annotation;
 
 import java.lang.annotation.*;
 
 @Inherited
-@BindingAnnotation
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
-public @interface JbootrpcService {
-    
-    Class[] exclude() default Void.class;
-
-    String group() default "";
-
-    String version() default "";
-
-    int port() default 0;
+@Target({ElementType.TYPE})
+public @interface BeanExclude {
+    Class[] value();
 }
