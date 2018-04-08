@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.component.opentracing;
-
-import io.opentracing.Tracer;
-import org.apache.skywalking.apm.toolkit.opentracing.SkywalkingTracer;
+package io.jboot.component.redis.lettuce;
 
 /**
- * Skywalking 手动埋点支撑
- * https://github.com/apache/incubator-skywalking/blob/master/docs/cn/Opentracing-CN.md
+ * @author Michael Yang 杨福海 （fuhai999@gmail.com）
+ * @version V1.0
  */
-public class SkywalkingTracerFactory implements TracerFactory {
+public class LettuceException extends RuntimeException {
 
-
-    private Tracer tracer;
-
-    public SkywalkingTracerFactory() {
-        tracer = new SkywalkingTracer();
+    public LettuceException() {
+        super();
     }
 
+    public LettuceException(String message) {
+        super(message);
+    }
 
-    @Override
-    public Tracer getTracer() {
-        return tracer;
+    public LettuceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public LettuceException(Throwable cause) {
+        super(cause);
+    }
+
+    protected LettuceException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

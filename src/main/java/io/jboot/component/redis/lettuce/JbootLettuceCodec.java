@@ -13,27 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.component.opentracing;
+package io.jboot.component.redis.lettuce;
 
-import io.opentracing.Tracer;
-import org.apache.skywalking.apm.toolkit.opentracing.SkywalkingTracer;
+import io.lettuce.core.codec.RedisCodec;
+
+import java.nio.ByteBuffer;
 
 /**
- * Skywalking 手动埋点支撑
- * https://github.com/apache/incubator-skywalking/blob/master/docs/cn/Opentracing-CN.md
+ * @author Michael Yang 杨福海 （fuhai999@gmail.com）
+ * @version V1.0
  */
-public class SkywalkingTracerFactory implements TracerFactory {
-
-
-    private Tracer tracer;
-
-    public SkywalkingTracerFactory() {
-        tracer = new SkywalkingTracer();
-    }
-
+public class JbootLettuceCodec implements RedisCodec<Object,Object> {
 
     @Override
-    public Tracer getTracer() {
-        return tracer;
+    public Object decodeKey(ByteBuffer bytes) {
+        return null;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuffer bytes) {
+        return null;
+    }
+
+    @Override
+    public ByteBuffer encodeKey(Object key) {
+        return null;
+    }
+
+    @Override
+    public ByteBuffer encodeValue(Object value) {
+        return null;
     }
 }

@@ -148,7 +148,9 @@ public class JbootConfigManager {
             return obj;
         }
 
-        obj = ClassKits.newInstance(clazz);
+        // 不能通过RPC创建
+        // 原因：很多场景下回使用到配置，包括Guice，如果此时又通过Guice来创建Config，会出现循环调用的问题
+        obj = ClassKits.newInstance(clazz, false);
         Collection<Method> setMethods = ClassKits.getClassSetMethods(clazz);
 
         for (Method method : setMethods) {
@@ -323,9 +325,9 @@ public class JbootConfigManager {
     private void initConfigRemoteReader() {
         configRemoteReader = new ConfigRemoteReader(config.getRemoteUrl(), config.getAppName(), 5) {
             @Override
-            public void onChange(String appName,String key, String oldValue, String value) {
+            public void onChange(String appName, String key, String oldValue, String value) {
 
-                if(!appName.equals(name))
+                if (!appName.equals(name))
                     return;
                 /**
                  * 过滤掉系统启动参数设置
@@ -358,17 +360,16 @@ public class JbootConfigManager {
         configRemoteReader.start();
     }
 
-    private static String getKeyName(String file){
+    private static String getKeyName(String file) {
         File fileio = new File(file);
         file = fileio.getName();
         int index = file.lastIndexOf('.');
-        file = file.substring(0,index);
+        file = file.substring(0, index);
         index = file.lastIndexOf('-');
-        if(index<0)
-        {
+        if (index < 0) {
             return "jboot";
-        }else{
-            file = file.substring(index+1);
+        } else {
+            file = file.substring(index + 1);
             return file;
         }
     }
