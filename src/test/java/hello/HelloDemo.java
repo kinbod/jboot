@@ -13,19 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.core.cache.annotation;
+package hello;
 
-import java.lang.annotation.*;
+import io.jboot.Jboot;
+import io.jboot.web.cache.EnableActionCache;
+import io.jboot.web.controller.JbootController;
+import io.jboot.web.controller.annotation.RequestMapping;
 
-@Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface CacheEvict {
-    String name();
 
-    String key() default "";
+@RequestMapping("/")
+public class HelloDemo extends JbootController {
 
-    String unless() default "";
 
-    boolean beforeInvocation() default false;
+    public static void main(String[] args) {
+        Jboot.setBootArg("jboot.mode","product");
+//        Jboot.setBootArg("jboot.server.type", "jetty");
+        Jboot.run(args);
+    }
+
+
+    @EnableActionCache
+    public void index() {
+
+       renderText("hello jboot ...");
+    }
+
+
 }

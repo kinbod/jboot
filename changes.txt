@@ -1,3 +1,25 @@
+jboot-1.5.3:
+新增：给 @CacheEvict 新增 beforeInvocation 配置
+新增：支持 Dubbo 的整体配置
+修复：不支持 JFinal 全局 AOP 配置的问题
+修复：MetricInterceptors 可能会出现空指针异常的问题
+
+jboot-1.5.2:
+新增：@CachesEvict 注解，用于删除多个缓存
+优化：缓存逻辑和代码
+
+
+jboot-1.5.1:
+修复：Event事件机制可能出现空指针异常的问题
+
+
+jboot-1.5.0:
+修复：metrics 访问 404 的问题
+优化：删除 jboot model 自动缓存的功能（目前需要缓存自行通过 service 层添加 @Cacheable 进行缓存）
+优化：删除 jboot model 自动发送数据库操作事件的功能
+优化：ClassScanner 在某些情况下扫描不到类的问题
+
+
 jboot-1.4.9:
 优化：Shiro模块代码，使之更加简单易用
 优化：ClassKits，防止在多线程下出现的异常问题

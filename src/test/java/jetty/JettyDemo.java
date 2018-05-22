@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package aop;
+package jetty;
 
 import com.google.inject.Inject;
 import io.jboot.Jboot;
@@ -24,12 +24,12 @@ import service.CategoryService;
 import javax.inject.Named;
 
 
-@RequestMapping("/aop")
-public class AopDemo extends JbootController {
+@RequestMapping("/jetty")
+public class JettyDemo extends JbootController {
 
 
     public static void main(String[] args) {
-//        Jboot.setBootArg("jboot.server.type", "jetty");
+        Jboot.setBootArg("jboot.server.type", "jetty");
         Jboot.setBootArg("jboot.metric.url", "/metrics_admin");
         Jboot.setBootArg("jboot.metric.reporter", "slf4j");
         Jboot.run(args);

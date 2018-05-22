@@ -21,7 +21,6 @@ import io.jboot.JbootConstants;
 import io.jboot.exception.JbootExceptionHolder;
 import io.jboot.web.JbootRequestContext;
 import io.jboot.web.session.JbootServletRequestWrapper;
-import io.jboot.web.websocket.JbootWebsocketManager;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,13 +28,9 @@ import javax.servlet.http.HttpServletResponse;
 
 public class JbootHandler extends Handler {
 
+
     @Override
     public void handle(String target, HttpServletRequest request, HttpServletResponse response, boolean[] isHandled) {
-
-        if (target.indexOf('.') != -1 || JbootWebsocketManager.me().isWebsokcetEndPoint(target)) {
-            return;
-        }
-
 
         /**
          * 通过 JbootRequestContext 去保存 request，然后可以在当前线程的任何地方

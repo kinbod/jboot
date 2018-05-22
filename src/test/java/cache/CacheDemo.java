@@ -32,8 +32,8 @@ public class CacheDemo extends JbootController {
 
         //jboot端口号配置
         Jboot.setBootArg("jboot.server.port", "8088");
-        Jboot.setBootArg("jboot.cache.type", "redis");
-        Jboot.setBootArg("jboot.redis.host", "127.0.0.1");
+//        Jboot.setBootArg("jboot.cache.type", "redis");
+//        Jboot.setBootArg("jboot.redis.host", "127.0.0.1");
 
 
         Jboot.run(args);
@@ -54,7 +54,7 @@ public class CacheDemo extends JbootController {
     }
 
     public void enableLive() {
-        String result = service.cacheAble("mykey");
+        String result = service.cacheAbleLive("mykey1");
         renderText(result);
     }
 
@@ -65,6 +65,10 @@ public class CacheDemo extends JbootController {
 
     public void evict() {
         service.cacheEvict("mykey");
+        renderText("evict ok");
+    }
+    public void evict1() {
+        service.cacheEvict1("mykey");
         renderText("evict ok");
     }
 
