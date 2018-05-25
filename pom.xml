@@ -6,7 +6,7 @@
 
     <groupId>io.jboot</groupId>
     <artifactId>jboot</artifactId>
-    <version>1.5.3</version>
+    <version>1.5.4</version>
     <packaging>jar</packaging>
 
     <name>jboot</name>
@@ -139,7 +139,7 @@
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-core</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -155,7 +155,7 @@
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-transport-netty4</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -171,7 +171,7 @@
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-registry-consul</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -187,7 +187,7 @@
         <dependency>
             <groupId>com.weibo</groupId>
             <artifactId>motan-registry-zookeeper</artifactId>
-            <version>1.1.0</version>
+            <version>1.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -216,7 +216,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>25.0-jre</version>
+            <version>25.1-jre</version>
         </dependency>
 
         <dependency>
@@ -428,7 +428,7 @@
         <dependency>
             <groupId>io.opentracing.brave</groupId>
             <artifactId>brave-opentracing</artifactId>
-            <version>0.30.3</version>
+            <version>0.31.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.zipkin.brave</groupId>
@@ -440,7 +440,7 @@
         <dependency>
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-sender-urlconnection</artifactId>
-            <version>2.6.0</version>
+            <version>2.6.1</version>
         </dependency>
 
         <dependency>
@@ -486,14 +486,14 @@
         <dependency>
             <groupId>net.oschina.j2cache</groupId>
             <artifactId>j2cache-core</artifactId>
-            <version>2.3.16-release</version>
+            <version>2.3.20-release</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.qpid</groupId>
             <artifactId>qpid-client</artifactId>
-            <version>6.3.0</version>
+            <version>6.3.1</version>
             <scope>provided</scope>
         </dependency>
 

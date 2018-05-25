@@ -17,11 +17,13 @@ package io.jboot.web.limitation;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.jfinal.core.Controller;
+import io.jboot.Jboot;
 import io.jboot.utils.RequestUtils;
 import io.jboot.utils.StringUtils;
 import io.jboot.web.fixedinterceptor.FixedInterceptor;
 import io.jboot.web.fixedinterceptor.FixedInvocation;
 
+import java.util.Collection;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -31,30 +33,39 @@ public class LimitationInterceptor implements FixedInterceptor {
 
 
     private static final ThreadLocal<Semaphore> SEMAPHORE_THREAD_LOCAL = new ThreadLocal<>();
+    private static LimitationConfig config = Jboot.config(LimitationConfig.class);
 
     @Override
     public void intercept(FixedInvocation inv) {
-
-        JbootLimitationManager manager = JbootLimitationManager.me();
-
-        LimitationInfo info = manager.getLimitationInfo(inv.getActionKey());
-        if (info == null || !info.isEnable()) {
+        if (!config.isEnable()) {
             inv.invoke();
             return;
         }
 
+        JbootLimitationManager manager = JbootLimitationManager.me();
 
-        if (tryToIntercept(inv, info)) {
-            renderLimitation(inv.getController(), info);
+        Collection<LimitationInfo> infos = manager.getLimitationInfo(inv.getActionKey());
+        if (infos == null || infos.isEmpty()) {
+            inv.invoke();
             return;
         }
+
+        for (LimitationInfo info : infos) {
+            if (tryToIntercept(inv, info)) {
+                renderLimitation(inv.getController(), info);
+                return;
+            }
+        }
+
 
         try {
             inv.invoke();
         } finally {
-            if (LimitationInfo.TYPE_CONCURRENCY.equals(info.getType())) {
-                SEMAPHORE_THREAD_LOCAL.get().release();
-                SEMAPHORE_THREAD_LOCAL.remove();
+            for (LimitationInfo info : infos) {
+                if (info.isConcurrencyType()) {
+                    SEMAPHORE_THREAD_LOCAL.get().release();
+                    SEMAPHORE_THREAD_LOCAL.remove();
+                }
             }
         }
     }
