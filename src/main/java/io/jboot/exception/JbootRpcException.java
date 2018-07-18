@@ -13,28 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.jboot.server.tomcat;
+package io.jboot.exception;
 
+public class JbootRpcException extends RuntimeException {
 
-import io.jboot.exception.JbootException;
-import io.jboot.server.JbootServer;
-
-public class TomcatServer implements JbootServer {
-
-
-    @Override
-    public boolean start() {
-        new JbootException("tomcat server not finish!!!");
-        return false;
+    public JbootRpcException() {
+        super();
     }
 
-    @Override
-    public boolean restart() {
-        return false;
+    public JbootRpcException(String message) {
+        super(message);
     }
 
-    @Override
-    public boolean stop() {
-        return false;
+    public JbootRpcException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public JbootRpcException(Throwable cause) {
+        super(cause);
+    }
+
+    protected JbootRpcException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

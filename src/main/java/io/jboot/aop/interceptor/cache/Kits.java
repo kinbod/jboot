@@ -18,7 +18,6 @@ package io.jboot.aop.interceptor.cache;
 import com.jfinal.template.Engine;
 import io.jboot.Jboot;
 import io.jboot.core.cache.annotation.CacheEvict;
-import io.jboot.exception.JbootAssert;
 import io.jboot.exception.JbootException;
 import io.jboot.utils.ArrayUtils;
 import io.jboot.utils.ClassKits;
@@ -91,36 +90,47 @@ class Kits {
 
         clazz = ClassKits.getUsefulClass(clazz);
 
-        if (StringUtils.isBlank(key)) {
-
-            if (ArrayUtils.isNullOrEmpty(arguments)) {
-                return String.format("%s#%s", clazz.getName(), method.getName());
-            }
-
-            Class[] paramTypes = method.getParameterTypes();
-            StringBuilder argumentTag = new StringBuilder();
-            int index = 0;
-            for (Object argument : arguments) {
-                String argumentString = converteToString(argument);
-                if (argumentString == null) {
-                    throw new JbootException("not support empty key for annotation @Cacheable,@CacheEvict or @CachePut " +
-                            "at method[" + clazz.getName() + "." + method.getName() + "()] " +
-                            "with argument class:" + argument.getClass().getName() + ", " +
-                            "please config key properties in @Cacheable, @CacheEvict or @CachePut annotation.");
-                }
-                argumentTag.append(paramTypes[index++].getClass().getName()).append(":").append(argumentString).append("-");
-            }
-
-            //remove last chat '-'
-            argumentTag.deleteCharAt(argumentTag.length() - 1);
-            return String.format("%s#%s#%s", clazz.getName(), method.getName(), argumentTag);
+        if (StringUtils.isNotBlank(key)) {
+            return renderKey(key, method, arguments);
         }
 
+
+        if (ArrayUtils.isNullOrEmpty(arguments)) {
+            return String.format("%s#%s", clazz.getName(), method.getName());
+        }
+
+        Class[] paramTypes = method.getParameterTypes();
+        StringBuilder argumentBuilder = new StringBuilder();
+        int index = 0;
+        for (Object argument : arguments) {
+            String argStr = converteToString(argument);
+            ensureArgumentNotNull(argStr, clazz, method);
+            argumentBuilder.append(paramTypes[index++].getClass().getName())
+                    .append(":")
+                    .append(argStr)
+                    .append("-");
+        }
+
+        //remove last chat '-'
+        argumentBuilder.deleteCharAt(argumentBuilder.length() - 1);
+        return String.format("%s#%s#%s", clazz.getName(), method.getName(), argumentBuilder.toString());
+    }
+
+    private static String renderKey(String key, Method method, Object[] arguments) {
         if (!key.contains("#(") || !key.contains(")")) {
             return key;
         }
 
         return Kits.engineRender(key, method, arguments);
+    }
+
+    private static void ensureArgumentNotNull(String argument, Class clazz, Method method) {
+        if (argument == null) {
+            throw new JbootException("not support empty key for annotation @Cacheable, @CacheEvict or @CachePut " +
+                    "at method[" + clazz.getName() + "." + method.getName() + "()] " +
+                    "with argument class:" + argument.getClass().getName() + ", " +
+                    "please config key properties in @Cacheable, @CacheEvict or @CachePut annotation.");
+        }
     }
 
 
@@ -191,8 +201,10 @@ class Kits {
         }
 
         String cacheName = evict.name();
-        JbootAssert.assertTrue(StringUtils.isNotBlank(cacheName),
-                String.format("CacheEvict.name()  must not empty in method [%s]!!!", targetClass.getName() + "#" + method.getName()));
+        if (StringUtils.isBlank(cacheName)) {
+            throw new JbootException(String.format("CacheEvict.name()  must not empty in method [%s].",
+                    ClassKits.getUsefulClass(targetClass).getName() + "." + method.getName()));
+        }
 
         if ("*".equals(evict.key().trim())) {
             Jboot.me().getCache().removeAll(cacheName);

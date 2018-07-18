@@ -48,7 +48,7 @@ import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.Map;
 
-public class JettyServer extends JbootServer {
+public class JettyServer implements JbootServer {
 
     private static Log log = Log.getLog(JettyServer.class);
 
@@ -103,7 +103,7 @@ public class JettyServer extends JbootServer {
 
 
         JbootMetricConfig metricsConfig = Jboot.config(JbootMetricConfig.class);
-        if (StringUtils.isNotBlank(metricsConfig.getMappingUrl())) {
+        if (metricsConfig.isConfigOk()) {
             handler.addEventListener(new JbootMetricServletContextListener());
             handler.addEventListener(new JbootHealthCheckServletContextListener());
             handler.addServlet(AdminServlet.class, metricsConfig.getMappingUrl());

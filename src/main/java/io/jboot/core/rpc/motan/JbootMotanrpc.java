@@ -16,12 +16,10 @@
 package io.jboot.core.rpc.motan;
 
 import com.weibo.api.motan.common.MotanConstants;
-import com.weibo.api.motan.config.ProtocolConfig;
-import com.weibo.api.motan.config.RefererConfig;
-import com.weibo.api.motan.config.RegistryConfig;
-import com.weibo.api.motan.config.ServiceConfig;
+import com.weibo.api.motan.config.*;
 import com.weibo.api.motan.util.MotanSwitcherUtil;
 import io.jboot.core.rpc.JbootrpcBase;
+import io.jboot.core.rpc.JbootrpcServiceConfig;
 import io.jboot.exception.JbootIllegalConfigException;
 import io.jboot.utils.StringUtils;
 
@@ -79,13 +77,10 @@ public class JbootMotanrpc extends JbootrpcBase {
 
 
     @Override
-    public <T> T serviceObtain(Class<T> serviceClass, String group, String version) {
+//    public <T> T serviceObtain(Class<T> serviceClass, String group, String version) {
+    public <T> T serviceObtain(Class<T> serviceClass, JbootrpcServiceConfig serviceConfig) {
 
-        if (StringUtils.isBlank(group)) {
-            group = getRpcConfig().getDefaultGroup();
-        }
-
-        String key = String.format("%s:%s:%s", serviceClass.getName(), group, version);
+        String key = String.format("%s:%s:%s", serviceClass.getName(), serviceConfig.getGroup(), serviceConfig.getVersion());
 
         T object = (T) singletons.get(key);
         if (object != null) {
@@ -95,22 +90,11 @@ public class JbootMotanrpc extends JbootrpcBase {
         RefererConfig<T> refererConfig = new RefererConfig<T>();
 
         // 设置接口及实现类
-        refererConfig.setInterface(serviceClass);
-
-        // 配置服务的group以及版本号
-        refererConfig.setGroup(group);
-        refererConfig.setVersion(version);
-        refererConfig.setRequestTimeout(getRpcConfig().getRequestTimeOut());
         refererConfig.setProtocol(protocolConfig);
-
-        if (StringUtils.isNotBlank(getRpcConfig().getProxy())) {
-            refererConfig.setProxy(getRpcConfig().getProxy());
-        } else {
-            refererConfig.setProxy("jboot");
-        }
-
-
+        refererConfig.setInterface(serviceClass);
         refererConfig.setCheck(String.valueOf(getRpcConfig().isConsumerCheck()));
+
+        initInterface(refererConfig, serviceConfig);
 
         /**
          * 注册中心模式
@@ -129,6 +113,7 @@ public class JbootMotanrpc extends JbootrpcBase {
             refererConfig.setDirectUrl(getRpcConfig().getDirectUrl());
         }
 
+
         object = refererConfig.getRef();
 
         if (object != null) {
@@ -139,11 +124,9 @@ public class JbootMotanrpc extends JbootrpcBase {
 
 
     @Override
-    public <T> boolean serviceExport(Class<T> interfaceClass, Object object, String group, String version, int port) {
+//    public <T> boolean serviceExport(Class<T> interfaceClass, Object object, String group, String version, int port) {
+    public <T> boolean serviceExport(Class<T> interfaceClass, Object object, JbootrpcServiceConfig serviceConfig) {
 
-        if (StringUtils.isBlank(group)) {
-            group = getRpcConfig().getDefaultGroup();
-        }
 
         synchronized (this) {
 
@@ -151,32 +134,69 @@ public class JbootMotanrpc extends JbootrpcBase {
 
             ServiceConfig<T> motanServiceConfig = new ServiceConfig<T>();
             motanServiceConfig.setRegistry(registryConfig);
-
             motanServiceConfig.setProtocol(protocolConfig);
 
             // 设置接口及实现类
             motanServiceConfig.setInterface(interfaceClass);
             motanServiceConfig.setRef((T) object);
 
-            // 配置服务的group以及版本号
             if (StringUtils.isNotBlank(getRpcConfig().getHost())) {
                 motanServiceConfig.setHost(getRpcConfig().getHost());
             }
-            motanServiceConfig.setGroup(group);
-            motanServiceConfig.setVersion(version);
+
 
             motanServiceConfig.setShareChannel(true);
-            motanServiceConfig.setExport(String.format("motan:%s", port));
+            motanServiceConfig.setExport(String.format("motan:%s", serviceConfig.getPort()));
             motanServiceConfig.setCheck(String.valueOf(getRpcConfig().isProviderCheck()));
+
+            initInterface(motanServiceConfig, serviceConfig);
 
 
             motanServiceConfig.export();
-
 
             MotanSwitcherUtil.setSwitcherValue(MotanConstants.REGISTRY_HEARTBEAT_SWITCHER, true);
         }
 
         return true;
+    }
+
+
+    private static void initInterface(AbstractInterfaceConfig interfaceConfig, JbootrpcServiceConfig config) {
+
+        interfaceConfig.setGroup(config.getGroup());
+        interfaceConfig.setVersion(config.getVersion());
+        interfaceConfig.setRequestTimeout(config.getTimeout());
+
+
+        if (config.getActives() != null) {
+            interfaceConfig.setActives(config.getActives());
+        }
+
+        if (config.getAsync() != null) {
+            interfaceConfig.setAsync(config.getAsync());
+        }
+
+
+        if (config.getRetries() != null) {
+            interfaceConfig.setRetries(config.getRetries());
+        }
+
+        if (config.getCheck() != null) {
+            interfaceConfig.setCheck(config.getCheck().toString());
+        }
+
+
+        if (StringUtils.isNotBlank(config.getProxy())) {
+            interfaceConfig.setProxy(config.getProxy());
+        } else {
+            //默认情况下用于 hystrix 代理
+            interfaceConfig.setProxy("jboot");
+        }
+
+
+        if (StringUtils.isNotBlank(config.getFilter())) {
+            interfaceConfig.setFilter(config.getFilter());
+        }
     }
 
 

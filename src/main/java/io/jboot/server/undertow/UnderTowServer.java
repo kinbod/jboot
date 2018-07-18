@@ -54,7 +54,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class UnderTowServer extends JbootServer {
+public class UnderTowServer implements JbootServer {
 
     static Log log = Log.getLog(UnderTowServer.class);
 
@@ -144,7 +144,7 @@ public class UnderTowServer extends JbootServer {
 
 
         JbootHystrixConfig hystrixConfig = Jboot.config(JbootHystrixConfig.class);
-        if (StringUtils.isNotBlank(hystrixConfig.getUrl())) {
+        if (hystrixConfig.isConfigOk()) {
             deploymentInfo.addServlets(
                     Servlets.servlet("HystrixMetricsStreamServlet", HystrixMetricsStreamServlet.class)
                             .addMapping(hystrixConfig.getUrl()));
@@ -152,7 +152,7 @@ public class UnderTowServer extends JbootServer {
 
 
         JbootMetricConfig metricsConfig = Jboot.config(JbootMetricConfig.class);
-        if (StringUtils.isNotBlank(metricsConfig.getMappingUrl())) {
+        if (metricsConfig.isConfigOk()) {
             deploymentInfo.addServlets(
                     Servlets.servlet("MetricsAdminServlet", AdminServlet.class)
                             .addMapping(metricsConfig.getMappingUrl()));

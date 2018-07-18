@@ -24,6 +24,8 @@ import io.jboot.web.controller.JbootController;
 import io.jboot.web.fixedinterceptor.FixedInterceptor;
 import io.jboot.web.fixedinterceptor.FixedInvocation;
 
+import java.lang.reflect.Method;
+
 /**
  * 验证拦截器
  */
@@ -34,18 +36,32 @@ public class ParaValidateInterceptor implements FixedInterceptor {
     @Override
     public void intercept(FixedInvocation inv) {
 
-        EmptyValidate emptyParaValidate = inv.getMethod().getAnnotation(EmptyValidate.class);
+        Method method = inv.getMethod();
+        
+        EmptyValidate emptyParaValidate = method.getAnnotation(EmptyValidate.class);
         if (emptyParaValidate != null && !validateEmpty(inv, emptyParaValidate)) {
             return;
         }
 
-        CaptchaValidate captchaValidate = inv.getMethod().getAnnotation(CaptchaValidate.class);
+        CaptchaValidate captchaValidate = method.getAnnotation(CaptchaValidate.class);
         if (captchaValidate != null && !validateCaptache(inv, captchaValidate)) {
             return;
         }
 
         inv.invoke();
 
+    }
+
+    /**
+     * 当 有文件上传的时候，需要通过 controller.getFiles() 才能正常通过 getParam 获取数据
+     *
+     * @param inv
+     */
+    private void parseMultpartRequestIfNecessary(FixedInvocation inv) {
+        Controller controller = inv.getController();
+        if (RequestUtils.isMultipartRequest(controller.getRequest())) {
+            controller.getFiles();
+        }
     }
 
 
@@ -61,6 +77,8 @@ public class ParaValidateInterceptor implements FixedInterceptor {
         if (StringUtils.isBlank(formName)) {
             throw new IllegalArgumentException("@CaptchaValidate.form must not be empty in " + inv.getController().getClass().getName() + "." + inv.getMethodName());
         }
+
+        parseMultpartRequestIfNecessary(inv);
 
         Controller controller = inv.getController();
         if (controller.validateCaptcha(formName)) {
@@ -110,6 +128,8 @@ public class ParaValidateInterceptor implements FixedInterceptor {
         if (ArrayUtils.isNullOrEmpty(forms)) {
             return true;
         }
+
+        parseMultpartRequestIfNecessary(inv);
 
         for (Form form : forms) {
             String formName = form.name();

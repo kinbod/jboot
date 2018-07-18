@@ -28,7 +28,7 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
 
     private HttpServletResponse response;
     private JbootHttpSession httpSession;
-    private JbootCache jbootCache;
+
 
     private int maxInactiveInterval = JbootSessionConfig.get().getMaxInactiveInterval();
     private String cookieName = JbootSessionConfig.get().getCookieName();
@@ -42,12 +42,11 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
     public JbootServletRequestWrapper(HttpServletRequest request, HttpServletResponse response) {
         super(request);
         this.response = response;
-        this.jbootCache = JbootCacheManager.me().getCache(cacheType);
     }
 
     @Override
     public HttpSession getSession() {
-        return getSession(true);
+        return getSession(false);
     }
 
 
@@ -71,21 +70,32 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     private Map<String, Object> createSessionStore(String sessionId) {
-        Map<String, Object> store = jbootCache.get(cacheName, sessionId);
+        Map<String, Object> store = getJbootCache().get(cacheName, sessionId);
         if (store == null) {
             store = Collections.emptyMap();
         }
         return store;
     }
 
+    private JbootCache cache;
+
+    private JbootCache getJbootCache() {
+        if (cache == null) {
+            cache = JbootCacheManager.me().getCache(cacheType);
+        }
+        return cache;
+    }
+
 
     /**
-     * http请求技术时，更新session信息，包括：刷新session的存储时间，更新session数据，清空session数据等
+     * http请求结束时，更新session信息，包括：刷新session的存储时间，更新session数据，清空session数据等
      */
     public void refreshSession() {
         if (httpSession == null) {
             return;
         }
+
+        JbootCache jbootCache = getJbootCache();
 
         //session已经被整体删除，调用了session.invalidate()
         if (!httpSession.isValid()) {
@@ -118,8 +128,6 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
 
-
-
     /**
      * Get cookie value by cookie name.
      */
@@ -132,7 +140,7 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
      * Get cookie object by cookie name.
      */
     private Cookie getCookieObject(String name) {
-        Cookie[] cookies = ((HttpServletRequest)getRequest()).getCookies();
+        Cookie[] cookies = ((HttpServletRequest) getRequest()).getCookies();
         if (cookies != null)
             for (Cookie cookie : cookies)
                 if (cookie.getName().equals(name))

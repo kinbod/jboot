@@ -1,3 +1,55 @@
+jboot-1.6.1:
+优化：FST序列化在Model发送变化的时候回出现序列化异常的问题
+优化：Hystrix onFallback 默认情况下，在 RPC 异常的时候不对外抛出的问题
+优化：@EmptyValidate 在有文件上传的时候解析不了的问题
+优化：简化 AOP 关于 Hystrix 降级配置的功能
+优化：RPC 默认端口修改为 8000，通过简化代码更加通俗易懂
+优化：@JbootrpcService 添加关于超时、并发量、重试次数和是否异步等配置支持
+优化：JbootServiceBase， 方便复写初始化DAO的逻辑
+优化：AOP 在未启用 Metric 时，不执行方法进行统计，提高性能
+优化：默认情况下 不对数据库查询的 DAO 进行 AOP 代理，提高性能
+优化：缓存注解相关逻辑，使之性能更高和对阅读更加友好
+
+
+jboot-1.6.0:
+优化：JbootModel的代码逻辑
+优化：防止DAO 的 AOP 代理，提升 DAO 增删改查的效率
+修复：当 JbootModel 启用 id 默认缓存的时候，有时出现数据类型转化错误的问题
+
+
+jboot-1.5.9:
+新增：jboot.model.idCacheEnable 配置的支持，方便根据ID查询的时候自动缓存
+优化：重命名 JbootModeGenerator 修改为 JbootModelGenerator
+
+
+jboot-1.5.8:
+修复：紧急修复 无法使用 Columns 进行查询的bug
+
+
+jboot-1.5.7:
+新增：JbootServer 的 SPI 扩展支持
+新增：Jwt 自动更新过期时间的支持
+优化：大量的细节优化
+
+
+jboot-1.5.6:
+优化：JbootServiceBase.deleteById() 方法
+优化：升级 Dubbo 到最新版本 2.6.2
+优化：代码生成器的代码逻辑
+修复：J2Cache 可能产生错误的问题
+修复：限流功能在针对单个用户限制时，不设置session内容会出现无效的问题
+修复：getSession() 默认会创建 session 对象的问题
+修复：错别字，ModelPacket 修改为 ModelPakage
+
+
+
+jboot-1.5.5:
+修复：JWT 的 Secret 设置带有特殊符号会出现Base64编码错误的问题
+修复：ClassScanner 可能会出现空指针异常的问题
+修复：Shiro 指令无法使用JFinal表达式的问题
+修复：Guava 升级到最新版本后出现 NoClassDefFoundError 异常的问题
+
+
 jboot-1.5.4:
 优化：JbootConfigManager 高并发下可能造成的 Config 多个实例的问题
 优化：ActionCache 代码逻辑优化，提高性能

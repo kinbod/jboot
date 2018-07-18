@@ -17,6 +17,7 @@ package rpcgroup;
 
 import io.jboot.Jboot;
 import io.jboot.core.rpc.Jbootrpc;
+import io.jboot.core.rpc.JbootrpcServiceConfig;
 import service.CategoryService;
 import service.CategoryServiceImpl;
 import service.UserService;
@@ -31,15 +32,21 @@ public class DubboServerDemo {
 
         Jboot.setBootArg("jboot.rpc.type", "dubbo");
         Jboot.setBootArg("jboot.rpc.callMode", "redirect");//直连模式，默认为注册中心
-        Jboot.setBootArg("jboot.rpc.directUrl", "localhost:8002");//直连模式的url地址
+        Jboot.setBootArg("jboot.rpc.directUrl", "localhost:8000");//直连模式的url地址
 
 
         Jboot.run(args);
 
         Jbootrpc factory = Jboot.me().getRpc();
 
-        factory.serviceExport(UserService.class, new UserServiceImpl(), "mygroup", "1.0", 8002);
-        factory.serviceExport(CategoryService.class, new CategoryServiceImpl(), "jboot", "1.0", 8002);
+        JbootrpcServiceConfig config1 = new JbootrpcServiceConfig();
+        config1.setGroup("mygroup");
+
+        JbootrpcServiceConfig config2 = new JbootrpcServiceConfig();
+        config2.setGroup("jbobbot");
+
+        factory.serviceExport(UserService.class, new UserServiceImpl(), config1);
+        factory.serviceExport(CategoryService.class, new CategoryServiceImpl(), config2);
 
 
         System.out.println("DubboServerDemo started...");
