@@ -42,11 +42,11 @@ public class DataSourceConfig {
     private boolean cachePrepStmts = true;
     private int prepStmtCacheSize = 500;
     private int prepStmtCacheSqlLimit = 2048;
-    private int maximumPoolSize = 100;
+    private int maximumPoolSize = 10;
 
     private Long maxLifetime;
     private Long idleTimeout;
-    private Integer minimumIdle;
+    private Integer minimumIdle = 0;
 
     private String sqlTemplatePath;
     private String sqlTemplate;
@@ -65,6 +65,8 @@ public class DataSourceConfig {
 
     private String table; //此数据源包含哪些表，这个配置会覆盖@Table注解的配置
     private String exTable; //该数据源排除哪些表，这个配置会修改掉@Table上的配置
+
+    private String dialectClass;
 
     /**
      * 是否需要添加到映射
@@ -322,5 +324,13 @@ public class DataSourceConfig {
 
     public void setMinimumIdle(Integer minimumIdle) {
         this.minimumIdle = minimumIdle;
+    }
+
+    public String getDialectClass() {
+        return dialectClass;
+    }
+
+    public void setDialectClass(String dialectClass) {
+        this.dialectClass = dialectClass;
     }
 }
