@@ -1,741 +1,1443 @@
-jboot-1.6.3:
-修复：Hikaricp当不设置最小连接数的时候，最小连接数默认等于最大连接数的问题
-新增：自定义数据库dialect方言的问题，解决分库分表的时候，JFinal启动会自动全表扫描的问题
+jboot v4.1.5 2023-09-08:
+优化：MockProxy 由 Java Proxy 替换 cblib
+优化：增加 Hikari 连接池配置参数 keepaliveTime 配置功能，感谢 @赵锋
+优化：设置 SentinelInterceptor 返回自定义的 json 串，感谢 @caoyuan
+优化：SentinelConfig 新增 set 方法，方便用户自己通过代码注入，感谢 @caoyuan
+优化：修改方法的 wrap 与 toUpperCase 方法为public ，方便重写时决定SQL是否需要加引号与大小写，感谢 @HingLo-C
+优化：升级相关依赖到最新版本
 
 
-jboot-1.6.2:
-修复：分布式session在使用redis缓存的时候会创建多个redis客户端的bug
-优化：升级 undertow 和 jfinal-wexin 等依赖
 
+jboot v4.1.3 2023-06-21:
+优化：线程池同一使用 NamedThreadPools.java 进行构建
+优化：修改版错别字 taked 为 took
+优化：添加更多的扫描 jar 排除，减少启动消耗时间
 
-jboot-1.6.1:
-优化：FST序列化在Model发送变化的时候回出现序列化异常的问题
-优化：Hystrix onFallback 默认情况下，在 RPC 异常的时候不对外抛出的问题
-优化：@EmptyValidate 在有文件上传的时候解析不了的问题
-优化：简化 AOP 关于 Hystrix 降级配置的功能
-优化：RPC 默认端口修改为 8000，通过简化代码更加通俗易懂
-优化：@JbootrpcService 添加关于超时、并发量、重试次数和是否异步等配置支持
-优化：JbootServiceBase， 方便复写初始化DAO的逻辑
-优化：AOP 在未启用 Metric 时，不执行方法进行统计，提高性能
-优化：默认情况下 不对数据库查询的 DAO 进行 AOP 代理，提高性能
-优化：缓存注解相关逻辑，使之性能更高和对阅读更加友好
 
 
-jboot-1.6.0:
-优化：JbootModel的代码逻辑
-优化：防止DAO 的 AOP 代理，提升 DAO 增删改查的效率
-修复：当 JbootModel 启用 id 默认缓存的时候，有时出现数据类型转化错误的问题
+jboot v4.1.2 2023-06-20:
+修复：Oracle 数据库在某些极端情况下出错的问题
 
 
-jboot-1.5.9:
-新增：jboot.model.idCacheEnable 配置的支持，方便根据ID查询的时候自动缓存
-优化：重命名 JbootModeGenerator 修改为 JbootModelGenerator
 
+jboot v4.1.1 2023-06-19:
+修复：修复 MQ 通知线程在高并发场景下无法及时回收的问题
+优化：升级 JFinal 等依赖到最新版本
 
-jboot-1.5.8:
-修复：紧急修复 无法使用 Columns 进行查询的bug
 
 
-jboot-1.5.7:
-新增：JbootServer 的 SPI 扩展支持
-新增：Jwt 自动更新过期时间的支持
-优化：大量的细节优化
+jboot v4.1.0 2023-05-12:
+新增：自定义 JFinalFilter 的支持
+优化：重命名 JbootAccessTokenCache 为 WechatAccessTokenCache
+优化：JbootAppListenerManager 中重复的 foreach 操作 感谢 @梦行
+优化：升级 Jfinal/jfinal-undertow/jsoup 等到最新版本
 
 
-jboot-1.5.6:
-优化：JbootServiceBase.deleteById() 方法
-优化：升级 Dubbo 到最新版本 2.6.2
-优化：代码生成器的代码逻辑
-修复：J2Cache 可能产生错误的问题
-修复：限流功能在针对单个用户限制时，不设置session内容会出现无效的问题
-修复：getSession() 默认会创建 session 对象的问题
-修复：错别字，ModelPacket 修改为 ModelPakage
 
+jboot v4.0.9 2023-03-08:
+优化：JbootResourceLoader 忽略掉 windows 和 mac 下的临时文件
+优化：修改 SqlBuilder.java 的错别字
+修复：Columns.orEqs 没有添加括号导致 sql 逻辑不对的问题
 
 
-jboot-1.5.5:
-修复：JWT 的 Secret 设置带有特殊符号会出现Base64编码错误的问题
-修复：ClassScanner 可能会出现空指针异常的问题
-修复：Shiro 指令无法使用JFinal表达式的问题
-修复：Guava 升级到最新版本后出现 NoClassDefFoundError 异常的问题
 
+jboot v4.0.8 2023-02-05:
+优化：升级 ShardingJDBC 到 5.x 最新版本
+优化：升级 Columns.in 和 notIn 等方法和错别字
+优化：升级 jfinal-undertow、jackson、metrics 等到最新版本
 
-jboot-1.5.4:
-优化：JbootConfigManager 高并发下可能造成的 Config 多个实例的问题
-优化：ActionCache 代码逻辑优化，提高性能
-优化：新增 JbootFilterHandler 用于过滤静态等数据，防止自动缓存的问题
-优化：FixedInterceptors 高并发下可能造成的空指针异常的问题
-优化：JbootShiroManager 在 shiro 功能关闭是还去初始化 shiro 路由的问题
-优化：JbootLimitationManager 在多个限流策略的时候，只有第一个生效的问题
-优化：JbootLimitationManager 代码逻辑，提高性能
-优化：升级 motan 到最新版本 v1.1.1 ，并修改 JbootMotanProxyFactory 代码逻辑
 
 
-jboot-1.5.3:
-新增：给 @CacheEvict 新增 beforeInvocation 配置
-新增：支持 Dubbo 的整体配置
-修复：不支持 JFinal 全局 AOP 配置的问题
-修复：MetricInterceptors 可能会出现空指针异常的问题
+jboot v4.0.7 2023-01-06:
+优化：重构 AttachmentManager 使之更加灵活易用
+新增：StrUtil.isStartsWithAny() 方法
+新增：FileUtil.getFileMD5() 等方法
+新增：CdnUtil.appendCdnDomain() 方法
 
 
-jboot-1.5.2:
-新增：@CachesEvict 注解，用于删除多个缓存
-优化：缓存逻辑和代码
 
+jboot v4.0.6 2022-12-31:
+修复：缓存注解自动生成 key 无法支持集合参数的问题
+优化：ApplicationUtil.java 使其在 window 下输出正确的 classpath 路径
+优化：修改 ValueFilterInterceptor.java 里的错别字
+优化：JbootConfigManager.java 配置独立目录时，再次读取 jboot.properties 文件
 
-jboot-1.5.1:
-修复：Event事件机制可能出现空指针异常的问题
 
 
-jboot-1.5.0:
-修复：metrics 访问 404 的问题
-优化：删除 jboot model 自动缓存的功能（目前需要缓存自行通过 service 层添加 @Cacheable 进行缓存）
-优化：删除 jboot model 自动发送数据库操作事件的功能
-优化：ClassScanner 在某些情况下扫描不到类的问题
+jboot v4.0.5 2022-12-29:
+新增：jboot.cache.cacheSyncMqChannel 的配置，用于对分布式缓存的 channel 进行自定义
+优化：JbootRedisCacheImpl 初始化的错误提示内容
+优化：ClassUtil.newInstance() 方法，方便对构造器进行传参
+优化：删除无用的 GenTester.java 文件
+优化：不再对 JbootSerializerManager 进行 Aop 增强
+优化：不再对 JbootmqManager 进行 Aop 增强
+优化：不再对 JbootEventManager 进行 Aop 增强
 
 
-jboot-1.4.9:
-优化：Shiro模块代码，使之更加简单易用
-优化：ClassKits，防止在多线程下出现的异常问题
-优化：Redis模块，新增更多的关于Redis配置
-优化：更新 guava、zipkin等模块
-修复：group 的配置在dubbo rpc下不起作用的问题
-新增：rpc registryFile 的配置支持
-核心升级：升级 JFinal 到最新版本 3.4 ，并优化JbootModel以适配JFinal
 
+jboot v4.0.2 2022-12-16:
+新增：db.each 的 sql 打印输出
+新增：通过 Controller 获取参数时，自动对参数进行 trim 操作
+新增：配置文件可以外部的任意目录
+优化：升级 jfinal 到最新版本
 
-jboot-1.4.8:
-修复：使用Shiro会造成静态文件无法正常读取的问题
-修复：数据库使用hystrix在事务的时候获取错误数据的问题
-
 
-jboot-1.4.7:
-新增：Shiro FilterUrlMapping自定义的支持
-新增：Shiro 默认使用Jboot分布式Session的支持
-新增：paginate分页查询不需要传orderby的方法
-修复：Shiro自定义注解无法使用在带参数的Action的问题
-修复：使用Shiro的时候使用websocket配置过于复杂的问题
-修复：JbootReqeustWrapper可能会出现空指针的问题
-修复：Classkits 可能会出现 ConcurrentModificationException 的问题
-修复：JbootModel在构建Sql的时候如果 orderby 参数为空字符串会出现 Sql 错误的问题
-优化：J2cache异常信息优化
-优化：更新undertow、HikariCP等到最新版本
 
+jboot v4.0.1 2022-12-03:
+新增：新增可以通过配置取消 AOP 缓存的功能
+新增：新增 jboot.cache.useFirstLevelOnly 配置的功能，可以在分布式下只开启 1 级缓存
+优化：修改 aop action 等默认缓存时间为 10 分钟
+优化：ModelUtil.keep 方法
+优化：ObjectUti.convert 方法
+修复：new Model().use("ds").update() 在某些场景下出错的问题
 
 
-jboot-1.4.6:
-新增：支持自定义 shiro 认证授权错误处理
-新增：新增 skywalking 手动埋点的支持
-新增：dubbo qos 相关配置的支持
-重构: 第三方模块比如jwt、sso等和shiro的整合
-
-
-jboot-1.4.5:
-新增：支持 jboot model 创建、更新时间列名自定义
-修复：带参数的action限流不起作用的bug
-修复：当使用cache注解后，无法抛出异常的问题
-修复：由于dubbo2.6x zookeeper客户端切换为curator造成使用zookeeper会出现缺少类的问题
-修复：注解 @JbootrpcService 定义rpc接口同时，又通过@JbootrpcService引入第三方rpc时出错的问题
-优化：当服务器无法启动的时候，指明哪个端口被占用了
-优化：Druid连接池默认添加stat过滤器查看sql统计情况
-优化：排除不必要的包扫描，更新依赖
-
-
-jboot-1.4.4:
-新增：MQ 接收消息时可以按顺序同步接收的配置
-优化：response的关闭有容器负责处理，Controller不再进行干涉
-优化：FlashMessage 不再依赖cookie的处理
-修复：ClassKits可能会休闲ConcurrentModificationException异常的问题
-修复：join 系列方法不支持非String类型的主键的bug
-修复：由于JFinal render之后会关闭response，导致handler的执行之后无法设置cookie的问题
 
+jboot v4.0.0 2022-11-27:
+优化：正式支持 jdk 17.x
 
-jboot-1.4.3:
-修复：RPC 由于默认排除是Object导致无法暴露的问题
 
-jboot-1.4.2:
-修复：Inject 和 RPC 接口过滤无效的问题
-
-jboot-1.4.1:
-修复：分布式session可能存在刷新session无效而造成session数据丢失的问题
-修复：缓存的ttl设置可能造成分布式多节点不同步的问题
-修复：JbootEventListener多个实现会造成Guice错误的问题
-优化：移除NoneCacheImpl
-优化：RPC暴露代码逻辑同
-
-
-jboot-1.4.0:
-新增：websocket 相关demo
-新增：websocket base path 配置
-优化：调整 @EnableCORS 顺序
-
-
-jboot-1.3.9:
-修复：Dao.use(datasource) 无法使用的问题
-修复：Before注解中拦截器getArgs() 数据不正确的问题
-新增：分库分表的demo和文档
-
-
-jboot-1.3.8:
-新增：@EnableMetricConcurrency 注解，用于通过Metrics监控当前Action的并发量
-新增：JwtShiroBridge接口，用于Jwt和shiro之间的整合，通过Jwt判断其Shiro权限
-修复：@Before注解在AOP中无法获取参数的问题
-修复：上个版本优化cookie代码后无法获取加密cookie的问题
-修复：同一个方法不能使用多个不带参数的Metricx维度监控的问题
-修复：类单词拼写错误，重命名JbootMetricConterAopInterceptor为JbootMetricCounterAopInterceptor
-
-
-jboot-1.3.7:
-优化：@EnableMetricCounter 为记录次数而不是并发量
-优化：model.use 可能造成的线程安全问题
-优化：AOP 框架 guice 升级到最新版本, 支持 java9 和 JPMS
-优化：重构mq模块，支持客户端不需要配置channel单独使用
-优化：更新undertow到最新版本，和其他依赖更新
-
-
-jboot-1.3.6:
-新增：hikaricp 支持 metrics 监控的功能
-修复：MetricManager 初始化可能出现空指针异常的问题
-优化：Jwt 的相关方法，新增直接创建token在json返回
-更新：undertow 到最新版本 2.0
-更新：JWT 的相关文档
-
-
-jboot-1.3.5:
-修复：Db.use() 总是使用最后一个的问题
-修复：jboot.datasource.table 和 jboot.datasource.extable 配置无效的问题
-修复：sharding-jdbc 使用 hintManager 必须关闭 hystrix，否则无法使用的问题
-文档：新增websocket相关的文档
-其他：更新依赖，升级sharding-jdbc到最新版本
-
-
-
-jboot-1.3.4:
-新增：model 查询的时候默认通过hystrix进行管理
-新增：db查询Record的时候，默认通过Hystrix进行管理
-新增：在多数据源的情况下，@Table注解添加DataSource配置的支持，可以指定在哪些数据源下
-修复：jboot.rpc.requestTimeout 对dubbo无效的问题
-修复：swagger页面出现 "Unknown Type : ref" 问题。
-文档：更新aop相关文档
-其他：更新相关依赖，hikariCP->2.7.7;druid->1.1.8;metrics->4.0.2;zipkin-sender->2.3.2
-
-
-jboot-1.3.3:
-新增：流量控制开关，当网站上线的时候不用重启自由开启关闭。
-新增：流量控制设置，当网站上线的时候可以自由设置流量控制大小。
-新增：@EnableConcurrencyLimit注解，用于多并发量的控制和限制。
-新增：数据源DataSource支持druid，同时可以通过SPI进行扩展。
-新增：添加ehcache默认cache的配置
-优化：通过 @Before 注解后，若抛出异常获得不到原始异常。
-优化：修改 geJwtAttrs() 笔误，修改为 getJwtAttrs()
-优化：更新依赖：fastjson->1.2.46，j2cache->2.3.8
-优化：重命名流量控制的相关注解，使之更加直观
-
-
-
-jboot-1.3.2:
-新增：JbootModelConfig的配置，全局配置是否缓存及缓存时间等
-新增：@Cacheevict 新增允许移除整个cacheName的配置
-新增：@Cacheable 注解添加允许存储 null 数据的配置 nullCacheEnabl
-修复：在多数据源的情况下无法使用 sqlite 当中数据源的问题
-修复：修改常量错别字
-优化：重构 Jboot 请求数据验证模块，使用更加灵活自由
-其他：更新 jwt 相关文档
-
-
-jboot-1.3.1:
-新增：自定义 dbProFactory、containerFactory、transactionLevel 等配置的支持
-新增：JWT 的支持，具体查看：https://gitee.com/fuhai/jboot/tree/master/src/test/java/jwt
-
-
-jboot-1.3.0:
-新增：注解 @EnableCORS 用于跨域配置的支持
-新增：Sharding-jdbc的注释说明，同时更新Sharding-jdbc到最新版本
-新增：代码生成器生成代码默认添加 FindAll() 方法
-修复：JFinal 的 findByCache、paginateByCache等方法没有走 JbootCache 的问题
-修复：RPC model作为参数，缓存配置没有序列化导致保持的时候无法更新缓存的问题
-修复：当使用auto_copy_model 模式的时候，保持成功无法自动赋值主键的问题
-修复：@Before(Interceptor.class)注解在Controller时，可能会触发两次的问题
-修复：多次调用 getBodyString() 只有第一次能正常获取数据的问题
-修复：文档相关的多处错误信息
-优化：MQ接受消息后，触发监听器改为异步的方式触发
-优化：FixedInvocation新增getInvocation()方法，用于底层自由控制
-其他：更新Jboot相关依赖到最新版本
-
-
-jboot-1.2.9:
-新增：dubbo qos 端口的配置支持
-新增：分布式配置中心可以按应用名获取配置信息
-修复：FlashMessage 修复连续多次redirect ，可能造成FlashMessage丢失的问题
-修复：修复由于ehcache过期造成element被移除后导致 getKeys 数据错误的问题
-修复：baseViewPath 非根目录下 swaggerui 找不到的问题
-修复：JFinal json序列化会导致 swaggerui 报错的问题
-优化：FlashMessage性能，之前访问页面的时候会清空FlashMessage，可能导致高并发清空下有大量无效的清空操作。
-优化：ehredis.getKeys() 可能造成大量访问redis的情况
-
-
-jboot-1.2.8:
-修复：jboot.rpc.proxy 和 jboot.rpc.filter 对 dubbo 或 motan 设置无效的问题
-修复：使用JbootRequestContext获取session的id不正确的问题
-优化：重命名 metrics 为 metric
-优化：升级 j2cache 到最新版本 2.2.4
-
-
-jboot-1.2.7:
-新增：dubbo 对 restful 的支持
-修复：当 jbootCache 配置类型为 j2cache 的时候，无法 clear() 的问题
-优化：Redis mq 当断开连接的时候会自动重连
-优化：更新 dubbo 到 2.6.0 最新版本
-优化：更新 j2cache 到 2.2.3 最新版本
-
-
-jboot-1.2.6:
-新增：CaptchaValidate注解，方便验证码验证；
-修复：配置cache为ehredis时，某些情况无法获取session的问题。
-优化：系统内置拦截器加载顺序，使之更加合理。
-优化：升级 J2cache 到最新 v2.2.0 版本，支持 cache element 的 ttl 设置。
-优化：支持自定义page的attr，使之更加好用合理。
-
-
-jboot-1.2.5:
-新增：qpid mq 的支持
-新增：Service 代码生成 默认添加 join 系列方法
-优化：注解 Form 的 value 属性修改为 name
-
-
-jboot-1.2.4:
-修复：FixedInterceptor 无法被注入的问题
-优化：重命名 HandlerInvocation 为 FixedInvocation
-优化：设置 FlashAttr 在页面渲染时，不在使用 #(flash.attr) 而直接使用 #(attr)
-优化：增强 EmptyValidate 的用法，支持指定字段的错误信息反馈
-优化：Service 层的代码生成器生成代码 默认使用 单利模式
-优化：移除 ehredis 的默认 channel，修正 demo 的配置信息
-优化：更新 FlashMessage demo 的使用方法
-
-
-jboot-1.2.3:
-新增：JbootCache 新增 J2Cache 的支持
-新增：PropertyConfig 注解新增 file() 的支持，可读取任意 properties 文件
-新增：Jboot 默认新增限流功能
-新增：自定义 FixedInterceptor 功能，FixedInterceptor 在Jfinal体系里是一个不能被 @Clear 的拦截器
-优化：重命名注解 PropertieConfig 为 PropertyConfig
-优化：移除 ehredis 缓存的 mq 依赖，默认使用 redis 的发布订阅功能
-优化：重命名 HandlerInterceptor 为 FixedInterceptor
-优化：使用 Caffeine 全面替代 Guava Cache
-
-
-
-jboot-1.2.2:
-新增：ParamType类，方便swagger注解使用
-新增：JbootCache 新增 getTtl() 和 setTtl() 方法，方便对缓存设置过期时间
-新增：添加ActionCache的key生成机制的配置，方便自己对ActionCache的key的管理
-新增：JbootController 新增 getBodyString() 方法，方便接收客户端POST过来的body数据
-新增：添加jetty的支持，需要自行添加jetty的maven依赖
-新增：AOP 添加对 @Bean(name="serviceName") 的支持，方便对一个接口有多个实现类的情况进行注入
-修复：JFinal constants.setError404View 等无效的问题
-修复：分布式下，可能导致不同节点的ehcache缓存过期时间不一致的问题
-修复：由于Jboot不断迭代导致文档多处错误的问题
-修复：在某些情况下 SPILoader 可能出现的空指针异常的问题
-优化：设置 ActionCache 的默认时间为1周，1周后自动缓存过期自动清除
-优化：重构数据源和sharding-jdbc分库分表部分，删除无用设计和代码
-优化：设置 session 自动过期和修改默认的 session 为 —JSID—，之前为JSESSIONID可能会和其他框架冲突
-优化：重命名 UnderTowClassloader 为 JbootServerClassloader，方便今后统一对class的管理
-
-
-jboot-1.2.1:
-修复：JbootModel 的 NullPointerException 异常问题
-修复：Controller rendderXml 和 renderTemplate 的时候，无法使用 ActionCache 的问题
-
-
-jboot-1.2.0:
-新增：新增 JbootShiroCacheManager ，用于 给shiro.ini 进行配置使用 Jboot 默认缓存
-新增：EnableActionCache 和 ActionCacheClear 注解，用于对action进行配置高速页面缓存
-新增：给JbootModel 添加 copyModel 方法，用于rpc对象传输时modifys丢失 无法保存的的问题
-修复：分布式配置文件启用是，读取分布式配置文件错误的问题
-修复：当分布式任务执行间隔小于60秒时，可能存在一个任务在多个系统执行的问题
-修复：ClassScanner有中文路径时，扫描不到class的问题
-修复：修复由于Jboot的自定义session没有实现getAttributeNames，使用Jfinal 的 SessionInViewInterceptor 会报错的问题
-优化：删除 undertow server 对 Jfinal 内部数据的初始化过程
-优化：当传入缓存时间为0 或者 小于0时，默认为永久缓存
-优化：执行package指令时，同步业务jar拷贝到 app 的 lib 目录中
-优化：更新guava、fastjson、opentracing等到最新版本
-
-
-jboot-1.1.9:
-新增：Columns实现序列化，支持RPC直接远程传入Columns。
-修复：JbootRedis的getWithoutSerialize方法返回空数据出现NullPointerException异常的问题。
-修复：JbootModel 通过 fastjson 序列化的时候没有排除某些私有方法而序列化异常的问题。
-优化：重构Swagger模块，移除Jboot自定义Swagger注解，添加Swagger原生注解支持。
-优化：更新sharding-jdbc到2.0.1版本，更新 fastjson 到1.2.43版本。
-
-
-jboot-1.1.8:
-新增：JbootCacheManager 通过配置文件直接获取 JbootCache 的方法，用于不同的场景调用不同的缓存。
-新增：JbootIllegalConfigException 异常类，用于给出配置文件错误的提示。
-新增：JbootRedis 新增 getWithoutSerialize 方法，用于读取一些由redis生成的非序列化数据。
-修复：自定义JFinal指令的时候，可能存在同一个页面下多个相同的指令出现数据污染的问题。
-优化：重构 Jbootmq 模块，移动channel配置到 jboot.mq.channel。
-优化：重构 ehredis 缓存模块，当不配置mq channel的时候不再抛出异常。
-
-
-jboot-1.1.7:
-优化：重构 JbootDirectiveBase 自定义指令，使得 getParam 更加简洁好用
-优化：删除 JbootVoModel 和其相关工具
-优化：完善 fastjson 序列化，新增 kryo 序列化配置的支持
-
-
-jboot-1.1.6:
-修复：JbootAppListenerManager 和 JbootInjectManager初始化相互调用的问题。
-修复：Jfinal renderJson() 由于存放了request对象导致无法正常渲染的问题。
-
-
-jboot-1.1.5:
-新增：自定义DataSource的支持，同时不影响sharding-jdbc的使用。
-新增：默认的sql模板路径，默认路径为classPath。
-新增：onGuiceConfigure配置函数，方便用户自己配置AOP的相关拦截。
-修复：dubbo rpc 无法发现jboot序列化的问题
-
-
-jboot-1.1.4:
-修复：JbootModel.cacheTime(time) 设置缓存失效时间不起作用的问题。
-优化：重构hystrix降级，修改JbootHystrixFallbackFactory为JbootHystrixFallbackLisntener
-
-
-jboot-1.1.3:
-新增：rpc 序列化自定义配置
-新增：rpc hystrix 启用开关配置和相关demo测试
-新增：rpc hystrix 超时时间配置和相关demo测试
-新增：添加数据库缓存失效时间的支持，默认失效时间为24小时。
-
-修复：Jboot在启动的时候会触发两次onJbootStarted的问题。
-修复：数据库删除一个不存在的id的时候可能存在空指针异常的问题。
-
-优化：升级motan到最新版本1.1.0，并修复consul1.0无法注册的问题
-优化：默认使用netty4作为motan的rpc底层框架
-优化：合并JbootKits和ClassNewer为Classkits。
-
-
-jboot-1.1.2:
-优化：重构metrics reporter，支持监控信息输出到 console、csv、jmx、slf4j、influxdb、graphite、ganglia 和 elasticsearch。
-优化：修改代码生成器的生成model的action由baseModelName改为modelName
-优化：添加setFlashMap(Map map)方法，flashMessage可以直接设置Map或者Jfinal的Ret
-优化：代码生成器的配置信息支持不完善，修改通过jboot.properties获取不到的问题
-优化：重构分库分表的功能，支持shardingjdbc 2.0最新版，并添加jfinal、jboot分库分表的demo
-优化：移除因为dubbo而关联依赖的spring-web
-
-
-
-jboot-1.1.1:
-新增：FlashMessage功能，方便Controller进行redirect的时候可以通知用户。
-新增：websocket的功能和具体使用demo。
-新增：在JbootAppListener里新增onAppStartBefore方法，方便扩展。
-新增：zbus rpc 的实现和支持。
-优化：重构JfinalHandler，可以自由添加Handler的顺序。
-优化：重构hystrix的降级功能，在进行降级回调的时候获取更多的细节。
-优化：重构JbootCache模块，方便获取底层具体对象，方便扩展。
-其他：更新依赖、完善文档。
-
-
-jboot-1.1.0:
-新增：mq 的队列模式（之前只有广播）
-新增：redis 和 rabbitmq 对队列的支持。
-新增：zbus的支持，暂时只支持zbus的mq。
-新增：jboot的相关demos（持续完善中）。
-修复：代码生成器生成的代码 tableName 注解错误的问题。（感谢 @Rlax 提交代码）
-修复：自定义motan registry但maven打包没有加入spi配置信息导致无法发现的bug。
-优化：重构 hystrix 和 rpc模块，允许用户自己控制rpc服务抛出的异常是否抛出到Controller，方便开发调试。
-其他：更新依赖、完善文档
-
-
-jboot-1.0:
-更新Jfinal到3.3，移除源码依赖（通过maven依赖）。
-
-新增：添加分布式下的统一配置中心
-新增：添加dubborpc的相关测试和demo
-新增：添加metrics的相关注解功能
-新增：添加Swagger模块
-新增：针对多ip的情况，增加rpchost自定义配置
-新增：dubbo针对多ip的情况，增加rpchost自定义配置
-新增：motanrpctestforconsulregistry
-新增：添加了jbootCache保存数据的时候，可以设置超时时间的功能；
-新增：添加zookeeper的相关测试和demo
-新增：cache注解测试，使用ehredis二级缓存测试
-新增：删除无用的实现，防止错误配置
-新增：http客户端的okhttp实现
-新增：分布式模式下的任务调度功能，基于cron4j和redis
-
-修复：JbootServiceInterfaceGenerator类的生成的findAll方法返回值被写死了返回List<User>
-修复：修复Service代码生成器生成的Service接口导报格式化不正确的bug
-修复：修复dubbo直连模式调用失败的bug
-修复：修复统一配置中心读取远程配置在app启动之后，可能造成本地文件没有的话获取数据为null的情况。
-修复：修复统一配置中心有可能由于网络问题造成本地配置被清空配置的问题。
-修复：修复当用户使用@clear注解的时候，会造成注入无效的bug
-修复：修复dubbo注册中心模式下（非直连模式）配置验证判断错误的问题
-修复：修复maven库路径存在空格情况下，jar扫描不到的情况
-修复：修复consul升级到1.0之后motan无法注册和获取服务的问题（motan的问题，已经给motan提交pr）
-修复：修复motanspi名字重复的bug
-修复：修复服务注册时候一个BUG，导致agenthost错误超时的问题。
-修复：修复dubbo无法发现关于Opentracing的proxyfactoryspi服务的问题
-修复：修复dubbo配置为注册中心为zookeeper的时候无法自动发现的问题
-修复：修复motan配置为注册中心为zookeeper的时候无法自动发现的问题
-修复：修复当Controller或者Servicerpc错误的时候，页面显示的错误无法明确错位位置的bug。
-修复：修复在使用缓存注解不使用key模版的情况下的，不同方法参数生成相同cachekey的情况。
-修复：修复motanregistry无法识别的问题
-修复：缓存类型ehredis情况下，Jboot.me().getCache().getKeys()永远为ehcache的结果
-修复：修复通过maven命令mvncleanpackageappassembler:generate-daemons打包的后台程序无法执行的bug
-
-优化：优化jbootapp启动速度
-优化：代码生成器为jfinal3.3的模板生成方
-优化：重构对jfinalinterceptor的注入流程
-优化：重构schedule部分，添加FixedDelay和FixedRate的支持。
-其他：更新依赖、完善文档
-
-
-jboot-1.0-rc.4:
-新增： Opentracing 模块 和 默认的 zipkin 实现，用于对分布式 RPC 的追踪支持。
-新增：注解 EnableTracing ，方便通过 Opentracing 给 Jfinal 的 action 添加数据追踪。
-新增：motan 和 dubbo 默认对 Opentracing 数据追踪的支持。
-新增：Opentracing 的相关文档。
-新增：为JbootModel 默认添加 findAll 方法。
-新增：service代码生成自动添加注解 @Bean ，方便 @Inject后就可以直接使用 。
-优化：给没有JbootModel相关没必要序列化的字段添加 transient 修饰。
-优化：完善 RPC 、opentracing 、hystrix 的相关测试和文档。
-修复：当启用 Opentracing 的同时 启用 Hystrix，会出现 Opentracing 追踪断裂的bug。
-修复：注解 @Before(Tx.class) 应用在类上的时候，事务回滚失败的bug。
-修复：oracle、sqlserver、postgresql的Dialect（方言）的limit数据错误的问题。
-修复：当调用Cache.removeAll()去移除一个不存在的key时，会出现redis错误的bug。
-修复：RPC远程调用在直连模式下无法获取service的bug。
-
-
-
-
-jboot-1.0-rc.3:
-新增：添加servlet相关的配置，支持之定义servlet。
-新增：新增RPC是否自动走Hystrix的相关配置支持
-新增：新增RPC 代理的配置，jboot.rpc.proxy
-新增：findFirstByColumns方法，根据多列和值查询一条数据
-优化：重构Shiro相关的AuthorizeResult，使用不被删除的方法。
-修复：service层代码生成器出现导报错误的bug
-修复：http post请求时，请求类型判断错误的bug
-修复：通过Jboot.me().getMetrics进行统计后，在浏览器浏览的数据不正确的问题。
-
-
-
-jboot-1.0-rc.2:
-新增：hystrix 自动监控和熔断对dubbo的支持
-新增：hystrix 的keys配置，方便RPC调用的时候对方法的监控和熔断
-新增：motan的自定义代理，方便今后扩展对客户端调用的监控
-新增：Jfinal的Plugin和Handler的自动注入功能
-新增：JbootModel的columns查询对AnsiSql、Orcacle、PostgreSql、Sqlite3、SqlServer的支持
-新增：升级dubbo到最新版本2.5.6，支持dubbo通信框架netty4的配置
-优化：重构SPI加载，使代码更加简洁易懂
-优化：完善Jboot SPI 扩展功能的注释和说明
-优化：重构 注解 @EnableHystrixCommand ，不允许其使用在Controller的字段上，造成误解。
-优化：完善Hystrix功能，在客户端（例如：Controller）可以调用 Jboot.hystrix(key,runable) 轻易的通过 hystrix 进行接管。
-优化：web相关拦截器和处理器的注入功能
-优化：重构Jboot的核心类 Jboot.java，把其工具方法全部修改为静态方法。
-优化：重构JbootModel，使Column查询其支持任何的数据库，同时JbootModel代码更加简洁
-优化：参数非空验证的拦截器 ParaValidateInterceptor 代码
-修复：hystrix注解多个key时，其他key的统计失效的问题
-修复：JFinal 指令 Directive 无法进行自动注入的问题
-修复：Shiro相关文档里的指令大小写错误的问题
-修复：Undertow Server在启动的时候出现异常（比如端口号被占用）等，可能出现空指针异常的bug
-修复：CDN配置自适应http和https时，出现的重复添加CDN前缀的问题。
-文档：完善分库分表文档
-文档：完善shiro相关文档
-文档：完善MQ消息队列文档
-文档：完善RPC远程调用相关文档
-文档：完善项目构建文档
-文档：完善JbootEvent事件机制文档
-其他：依赖升级 dubbo ->2.5.6；fst->2.54
-
-
-
-jboot-1.0-rc.1:
-新增：数据库分表的支持（之前已经完成对多数据源分库的支持），分表支持依赖于sharding-jdbc
-新增：分库分表相关的使用文档
-新增：对拦截器自动注入功能的支持
-优化：Cookie的加密工具配置加密key为选配，当没配置的时候不会抛出异常，只是会发出警告。
-优化：优化拦截器注入性能
-优化：重构AOP对jfinal 的 Controller和interceptor 注入工作，代码更加容易理解。
-依赖更新：HikariCP -> 2.7.2 ；fastjson -> 1.2.38
-
-
-
-jboot-1.0-beta9:
-修复：cron4j 注解配置会抛出异常的bug。 close #IF5U1:关于cron4j使用注解创建的问题
-修复：在使用JbootServiceBase作为service层的基类时，通过注入的方式初始化会造成初始化失败的问题。
-新增：RPC直连模式调用的支持。
-
-
-
-
-jboot-1.0-beta8:
-新增：RPC模块支持自定义序列化，可以和Jboot本身的序列化不共享同一个序列化对象。
-修复：在使用redis作为默认缓存的情况下，根据主键查询一个不存在的数据可能会抛出NullPointerException的问题。
-依赖更新：metrics ->3.2.5，HikariCP ->2.7.1 ， fastjson -> 1.2.38 ，fst -> 2.53，dubbo->2.5.5。
-
-
-
-
-jboot-1.0-beta7:
-新增：多数据源情况下，是否添加表映射的配置支持。
-新增：websocket的支持，更新依赖。
-修复：启用分布式session的情况下，在同一个request里setSession又去getSession 得到空值的bug
-修复：修改方法名 RedisManager.getReidis() 为 RedisManager.getRedis()
-优化：appassembler-maven-plugin插件打包jar存放的目录由lib修改为libs
-优化：删除 无用的 JbootSessionManager 类
-更新：分布式session的相关文档。
-更新：dubbo到最新版本2.5.4
-更新：undertow到最新版本1.4.20.Final
-
-
-
-jboot-1.0-beta6:
-1、添加JbootServiceBase，方便在Jboot APP中对service的编写工作。
-2、添加JbootServiceGenerator用于对Service层的代码生成。
-3、优化Jboot代码生成逻辑，使之代码更加简洁。
-4、优化配置文件读取可以读取没有前缀的配置信息，同时可以不需要@PropertieConfig 注解的配置。
-5、修复：在 JDK9 下编译失败的问题，JDK9 添加新的类java.lang.Module，导致类引入不明。
-6、更新shiro相关的文档内容。
-
-
-jboot-1.0-beta5:
-1、新增：在分库的时候，可以给每个数据源排除表配置的支持。
-2、新增：@Cron4jTask 注解无法使用在ProcessTask和Task类的问题。
-3、新增：http模块支持自动设置multipartFormData的问题，之前是需要手动设置。
-4、新增：EncryptCookieUtils工具类，用于对cookie进行安全加密使用。
-5、新增：dubbo rpc实现的支持，据说dubbo要更新了？
-6、优化：RPC模块。
-7、优化：部分代码，提高效率。
-8、修复：无法对jfinal model 进行注入的问题。
-9、修复：ClassNewer创建的实例无法被AOP控制的问题。
-10、修复：RPC模式设置无效的问题。
-11、修复：@JbootrpcService注解的缺省配置无法注入RPC实例的问题。
-12、依赖更新： fst:2.52，undertow:1.4.18.Final，阿里云ons-client:1.6.0.Final,amqp-client:4.2.0
-
-
-
-jboot-1.0-beta4:
-1、升级Jfinal到最新版本3.2，支持Controller方法参数化获取页面提交参数，需java8编译并添加-parameters配置
-2、升级新浪RPC框架motan到最新版本0.3.1，并做简单重构功能。
-3、升级fastjson到最新版本1.2.36
-4、新增使用@Cacheable @CacheEvict @CachePut无需再添加@Named配置，需java8编译并添加-parameters配置
-5、新增生成代码的时候，可以排除指定表名的支持。
-6、重构JbootDbManager使之代码更加直观简洁。
-7、重构JbootEhredisCacheImpl二级缓存的实现。
-8、修复部分用户把sql文件放在classes目录下被读取的问题。
-9、修复当没有任何model，全部使用record操作数据库的时候出现空指针异常的问题。
-10、初始化Jboot的使用文档和帮助文档。
-
-
-
-jboot-1.0-beta3:
-1、修复使用@Inject自动注入后，再使用JFinal的@Before(Tx.Class)会出现空指针的问题。
-2、修复读取配置文件的时候，同一个Class对于不同的配置信息读取不到的问题。
-3、修复多数据源的时候，读取数据源解析错误的问题。
-4、修复readme文档编写错误的问题。
-5、修复当有JbootAppListener监听器的时候，JbootAppListenerManager无法初始化的问题。
-
-
-
-
-jboot-1.0-beta2:
-1、修复jboot shiro模块的相关bug，可以愉快的在项目中使用shiro了，而且可能是jfinal的shiro支持中最好用的一个。感谢@zhoujh
-2、修复无法实例化JbootDbManager的bug。
-3、修复JbootRedisLock基于Redis的分布式锁release出错的bug。
-4、新增datasource poolName的配置支持。
-5、新增多数据源的支持，非常非常简单的在Jfinal中使用多数据源。
-6、新增CacheEvict和CachePut两个注解，方便通过配置设置缓存。
-7、新增JbootAppListener监听器，方便监听Jboot和Jfinal的启动状态，对自己的程序进行初始化等工作。
-8、新增Jfinal sql template 配置的支持，只需在jboot.properties进行配置，无需一行代码。
-
-
-
-
-jboot-1.0-beta1:
-1、重构shiro模块，使其支持shiro.ini配置，方便其他项目迁移。
-2、新增JbootRedisLock基于redis的分布式锁。
-3、重构jboot.java 不再支持静态调用，而是通过Jboot.me().xxx这样去调用，方便后续的热加载功能。
-4、新增JbootServer的restart方法，方便后续的热加载。
-5、修复redis密码配置，在没有超时时间配置的时候无效的问题。
-6、修复：redis不能使用blpop命令和brpop命令的bug。
-7、修复：@JbootrpcService注解无法指定远程rpc分组和版本的问题。
-8、完善 jboot 的错误输出，在500错误的时候能够在页面清晰看到错误信息，方便开发排查。
-9、升级 fastjson 到最新版本 1.2.3
-10、完善jboot开发模式设置，新增jboot默认设置为dev，方便日志输出。
-11、修复：motan rpc模块在spi加载的错误问题。
-12、修复：jboot微信模块的access token cache的可能导致的缓存冲突的问题。
-13、更正readme文档，修复其他若干bug，增强稳定性。
-
-
-
-jboot-1.0-alpha5:
-1、修复AOP接口自动绑定时不成功的bug，新增了@Bean注解，方便对接口绑定的配置；
-2、移除默认的jvm对jmx的设置，因为在docker环境下，设置网络为host模式时可能会产生端口冲突的问题。
-3、移除motan的rpc序列化框架hessian，因为hessian在对bigdecimal序列化出错。
-4、修复在macos下，jboot程序无法在后台启动的问题；
-5、添加shiro框架的支持，用于对jboot的安全控制。
-6、添加 @Cacheable 注解，方便对Service进行缓存管理。
-7、修复 使用 @EnableHystrixCommand 使用Hystrix对某些服务进行管理时，某些参数无法注入的问题。
-8、修复 在某些情况下，初始化JbootMotanrpc可能会出现空指针的问题。
-9、移除 ehcache 缓存文件路径的默认设置。
-10.Jbootredis新增对集群环境的支持，Jboot.getRedis() 可以快乐的在集群和非集群环境下使用了。
-11、修复在某些情况下，通过model.getPrimaryKey() 获取不到数据的问题。
-12、依赖框架的升级：HikariCP升级到最新版本2.6.3，undertow升级到最新版本1.4.16.Final，fastjson升级到1.2.33，jsoup升级到1.10.3，shiro升级到最新版本1.4.0...
-13、更正readme文档，修复其他若干bug，增强稳定性。
-
-
-
-
-jboot-1.0-alpha4:
-1、添加SPI扩展方法，方便对Jboot内置模块的扩展实现。
-2、新增自定义序列化的支持，开发者可以选择现有系统已经支持的序列化方法（默认：fst2）。
-3、修复在某些情况下服务无法暴露的问题。
-4、设置jboot的端口号为8080。
-5、新增拦截器的AOP功能。
-6、移除ehcache的scope：provided，也就是说jboot默认内置ehcache。
-7、新增JFinal AOP的兼容，在JBoot通过注入的方式实例化对象的时候，一样可以使用Jfinal的AOP功能。
-8、移除appassembler打包对jvmSettings的默认配置。
-9、修复在某些情况下使用JbootEhredis缓存错误的问题。
-10、更正readme文档，修复其他若干bug，增强稳定性。
-
-
-
-jboot-1.0-alpha3:
-1、对jboot代码进行重构，添加component模块，引入flyway、hystrix、metrics、redis、shiro、zuul等开源软件，方便对jboot的监控和管理。
-2、新增：JbootDaoBase，方便jion操作
-3、新增：Jboot启动的服务器信息输出，比如webroot路径，当前服务地址等
-4、新增：序列化组件，方便自由对mq、rpc、cache等序列化。
-5、新增：JFianl 的 sharedMethod、sharedStaticMethod、sharedObject 注解，用于配置模板共享函数和对象
-6、新增：数据源配置 maximumPoolSize，用不配置连接池大小。
-7、新增j：boot启动完成的时候会发现启动完成的事件，方便应用初始化其他数据
-8、新增：jbootdemo项目，方便快速入门。
-9、修复 fst2 反序列化出错的问题
-10、修复 jbootredis读取数据可能出错的问题
-11、修复 jbootredis 接收数据在某些情况下可能无法接收的bug
-12、修复 代码生成器 当主键字段不为id时，报错的问题。
-13、修复 代码生成器 当主键字段不为uuid时，报错的问题。
-14、优化：重命名 UrlMapping 为 RequestMapping
-15、优化：重命名 UseHystrixCommand 为 EnableHystrixCommand
-16、优化：重命名 JbootDirective 为 JFinalDirective
-17、优化：移除JbootService
-18、优化：log输出移除log4j，修改为slf4j
-19、更新 readme文档
-
-
-
-
-jboot-1.0-alpha2:
-修复：jbootrpcService 无法在类上进行注解的bug
-修复：在某些情况下无法实例化jbootredis的bug
-修复：jfinal-weixin在集群模式下获取ticket错误的问题
-新增：添加rpc服务调用统计
-新增：@UseHystrixCommand注解，用于controller调用使用Hystrix进行管理（访问隔离、容错隔离、延迟隔离、 熔断）
-新增：基于guice的aop功能
-新增：jbootmqConfig的默认配置（之前没有配置会出现异常）
-新增：mq监听器的多渠监听功能（multiChannel）
-优化：jbootrpcService注解的使用
-优化：ClassNewer的错误信息
-优化：更新jfinal-cos到最新版本"2017.5"
-优化：修改JbootEventListner的onMessage为onEvent，防止和mq的onMessage冲突。
+===================== v3.x =========================
+
+jboot v3.17.1 2022-11-13:
+优化：Columns.java 对空条件的判断
+优化：ClassScanner.java 支持扫描 jar 包里的 jar 包，感谢 @陈立刚
+优化：Redis 消息队列设置支持多个 database，感谢 @陈立刚
+
+
+
+jboot v3.17.0 2022-11-12:
+新增：自定义 Controller 缓存刷新 key 的功能
+优化：Jboot MQ 在启动和停止的时候，不对已启动进行错误抛出，方便多模块可以自由启动或停止
+优化：Jboot MQ 添加监听器的时候，自动添加 channel 信息
+优化：升级 jackson-core 等到最新版本
+
+
+
+jboot v3.16.8 2022-11-06:
+新增：Controller.getFilesOnly(Set<String> paraNames) 方法
+优化：默认关闭缓存日志
+
+
+
+jboot v3.16.7 2022-10-31:
+新增：添加 CachePrinter 的支持，方便把缓存信息输出在控制台或者日志上
+优化：JbootResourceLoader 优化过滤掉 Windows 的临时文件
+优化：使用注解验证数据时，控制台不再抛出异常信息，只打印基本验证错误信息
+优化：为验证码等组件缓存过滤掉线程前缀的设置
+
+
+
+jboot v3.16.6 2022-10-25:
+修复：HttpUtil.download 出现 NPE 的问题
+
+
+
+jboot v3.16.5 2022-10-23:
+修复：Controller 使用返回值渲染并使用 cacheable 注解对其缓存时出错的问题
+修复：ObjectUtil.convert() 在某些极端情况下错误的问题
+
+
+
+jboot v3.16.4 2022-10-19:
+优化：doNotAlloVisitRedirect 错别字
+优化：修改 CacheUtil.setCurrentPrefix() 方法为 setThreadCacheNamePrefix
+新增：添加 JbootCache.addThreadCacheNamePrefixIngore() 方法
+
+
+
+jboot v3.16.3 2022-10-17:
+新增：SqlBuilder.escapeOrderBySql 用于过滤 Order By 参数
+新增：InterceptorBuilder.Util.isChildClassOf 方法
+新增：JbootController.getParaToBigInteger(index) 方法
+优化：RequestUtil.getIpAddress() 对 127.0.0.1 的处理
+优化：JbootResourceLoader 的日志输出和目标路径的优化
+
+
+
+jboot v3.16.2 2022-10-07:
+新增：ObjectUtil.obtainNotNull 方法
+新增：StrUtil.obtainNotBlank 方法
+优化：升级 jfinal-undertow 到最新版本并移除 JbootApplication 的 URL 打印功功能。
+
+
+
+jboot v3.16.1:
+新增：APP 在启动的时候，输出 Local URL，方便通过控制台启动浏览器
+新增：FileUtil.ensuresParentExists() 方法
+新增：DAO.deleteAll() 方法
+修复：Controller 通过 return 渲染 Json 数据时，控制台不输出 Render 信息的问题
+修复：JbootController.getFileOnly(name) 返回的数据不正确
+
+
+
+jboot v3.16.0:
+优化：重构 @Cacheable 在 Controller 中的使用，使之更加灵活方便
+优化：FileUtil.unzip 方法，添加可以指定解压缩编码的参数
+优化：升级 JFinal、 jackson-core 等到最新版本
+修复：JbootServiceBase.initDao 在非泛型子类时初始化出错的问题
+修复：Sqlbuilder 在使用别名 + between 时，生成的 SQL 出错的问题
+
+
+
+jboot v3.15.10:
+优化：增强 http 工具类，默认支持携带 cookie 重定向
+优化：升级 Jsoup 到 v1.15.3 最新版本
+修复：对在中文目录下部署时，可能对环境判断错误的问题
+
+
+
+jboot v3.15.9:
+新增：Controller.getFileOnly(name) 和 getFilesOnly(names)
+优化：升级 Jsoup 等相关依赖到最新版本
+修复：当 ActionKey 注解使用 ./ 相对路径时，swagger文档中的 path 会生成包含 ./ 的错误API路径的问题
+
+
+
+jboot v3.15.8:
+新增：FileUtil.delete 方法
+新增：JbootController.getFirstFileOnly() 方法
+优化：JbootController.getFile() 设置为删除方法
+优化：升级 JFinal 到最新版本
+
+
+
+jboot v3.15.7:
+修复：RPC 的 Reference 缓存 key 构建错误导致无法命中缓存的问题
+新增：FileUtil.removeSuffix() 方法
+新增：ModelUtil.keep(List<Model> models) 方法
+新增：CollectionUtil.toString() 方法
+新增：ArrayUtil.toString() 方法
+新增：DateUtil 解析 datetime-local 方法
+
+
+
+jboot v3.15.6:
+新增：JbootmqBase 添加自定义线程池的接口方法
+新增：JbootModel.processColumns() 方法，在某些场景下用于对 Columns 进行二次加工
+优化：Redis MQ 的 lpush 对应应该是 rpop 的问题，同时添加 interval 设置方法
+优化：JbootPaginateDirective 添加自动从 scope 获取 Page 对象的方法
+优化：移除 JbootModel 的 getBigInteger 和 getBigDecimal 方法，新版本的 JFinal 已经实现了
+修复：修复 Model.use("datasource").save() 的时候无法正确保存数据的问题
+
+
+
+jboot v3.15.5:
+修复：当开启 nacos 配置中心，有启用带参数内容 ${} 时，出现 StackOverFlow 的问题
+修复：HttpUtil 获取 GBK 网址内容时，出现乱码的问题
+
+
+
+jboot v3.15.4:
+优化：升级适配 Seata 到最新版本 1.5.1，感谢 @扫地猿
+优化：CookieUtil，方便在 Handler 里对 Cookie 进行操作
+文档：新增 dubbo2 升级到 dubbo3 的升级文档，感谢 @自由领主
+
+
+
+jboot v3.15.3:
+新增：代码生成器新增 白名单 配置的支持，感谢 @xujianxie
+优化：升级 FastJson 到最新版本
+
+
+
+jboot v3.15.2:
+修复：DAO 配置了 loadColumns 时又配置了 distinct 时，无法获得正确结果的问题
+优化：优化 Columns.toString() 方法，防止在开发工具 debug 下显示 "null" 的问题
+
+
+
+jboot v3.15.1:
+新增：JbootOutputDirectiveFactory，用于忽略在生产环境下，模板引擎执行的错误输出
+新增：CodeGenHelpler 新增对 infomix 数据库的支持，感谢 @xujianxie
+优化：升级 JFinal 到 v5.0 最新版本，其他相关依赖也升级到新版本
+
+
+
+jboot v3.15.0:
+优化：ValidErrorRender 使用 Ret.fail() 来创建，方便统一定义 message 字段
+优化：InterceptorBuilderManager 默认对所有 Interceptor 进行注入
+优化：Controller 新增 getAttrs() 和 renderToStringWithAttrs() 方法
+修复：Controller 接收 int[] 时，使用 @Size 等注解验证时出错的问题
+修复：Model.dao() 查询在某些情况下出错的问题
+修复：注解 @Size(max=xxx) 拦截错误的问题
+
+
+
+jboot v3.14.9:
+修复：在某些极端场景下，StrUtil.escapeHtml 无法通过 unEscapeHtml 还原的问题
+优化：删除某些无用的方法和类
+
+
+
+jboot v3.14.8:
+修复：DataSourceConfigManager 里的数据源在 APP 启动成功后会被清空的问题
+修复：配置 redis GlobalKeyPrefix，CacheUtil.getKeys(cacheName) 无法正确获取 keys 的问题
+
+
+
+jboot v3.14.7:
+修复：Jboot AppListener 启动时的错误信息，无法正确输出的问题
+
+
+
+jboot v3.14.6:
+修复：JbootLockCounter  和 JbootLocalLock 不可用的问题
+优化：删除一些无用的类或者空实现的类
+
+
+
+jboot v3.14.5:
+新增：JsonUtil.getList 和 JsonUtil.getSet 方法
+新增：RSAUtil 非对称加解密工具类
+新增：DESUtil 对称加解密工具类
+
+
+
+jboot v3.14.4:
+新增：生产环境忽略模板指令渲染错误的功能，保证其他内容正常渲染
+新增：模板错误渲染器 TemplateErrorRender，用于追加模板指令错误内容
+新增：是否开启 Controller Action 缓存的开关，方便在不同的场景下进行开启或者关闭
+新增：JbootEventManager 可以设置自己的线程池
+优化：ValidUtil 中ValidatorFactory初始化一次，供Validator、MessageInterpolator复用，感谢 @wtusrss
+优化：升级 JFinal/JFinal-Undertow 等到最新版本
+修复：HttpUtil 在 POST 的时候，添加了参数又设置 body 内容时，参数失效的问题
+文档：修改文档错别字
+
+
+
+jboot v3.14.3:
+优化：JbootModel.findByColumn 当传入 null 值 value 时，直接返回 null
+优化：Model 保存和之前版本一致的行为，只允许绑定到一个数据源
+优化：当 Model 配置指定数据源，但数据源不存在的时候，给出更为明确的错误提示
+优化：Rabbitmq 添加自由开启队列和广播的开关，默认全部开启
+优化：重构 CORS 模块，使之代码可以用户模块里进行 "复用"
+修复: HttpUtil 在 put 请求时，某些情况下无法正常提交数据的问题
+
+
+
+jboot v3.14.2:
+新增：Informix 数据库方言，感谢 @xujianxie 同学
+新增：JbootModel 新增 findByIdWithoutCache() 方法
+新增：新增 JbootModel 的 CPI 类，用于开放保护方法
+新增：Nacos 远程配置中心添加多实例的配置支持
+新增：网关拦截器 GatewayConfig.interceptors 添加 SPI 名称配置的支持
+新增：JsonUtil.java 方便解析 Json 数据
+优化：ValidUtil.java，支持在非自定义消息的时候输出拦截的列名
+优化：ClassScanner.java 默认关闭 Class 扫描信息在控制台输出
+优化：修改缓存拦截器的默认权重为 100，当前情况下拦截器在最后执行
+
+
+
+jboot v3.14.1:
+新增：注解 @Table(datasource="xxx") 新增对数据源的配置支持
+新增：添加 jboo.app.listenerPackage 配置支持，用于只扫描哪些包的 listener
+优化：完善 JbootJson 更多的代码注释
+优化：优化 JbootConfigManager.java 代码，对添加 key 进行 trim()
+优化：进一步完善 jboot.properties 文件存放位置的探测
+优化：单元测试移除 mockHandler
+优化：DAO.findFirstByColumn()，当传入 null 应抛出错误，防止查询出错误的数据
+优化：rabbitmq.queueDeclareDurable 的配置默认设置为 false
+优化：对 QuietlyUtil 的方法进行重命名优化
+优化：ValidErrorRender 输出的 message 不带有 fieldName 信息
+优化：升级 Jfinal 等依赖到最新版本
+修复：@Cacheput() 注解在 Controller 上无效的问题
+
+
+
+jboot v3.14.0:
+新增：@Cacheable() 等系列缓存注解对 controller 的支持
+优化：优化 fastjson 序列化的功能，使用 config 而非 features
+优化：重命名注解 @TxEnable() 修改为 @Transactional()，并为  @Transactional() 添加更多的配置功能
+优化：为 RabbitMQ 添加更多的自定义配置
+优化：自动检测是否依赖 jfinal-wexin 并自动配置 JbootAccessTokenCache
+优化：删除 JacksonSerializer 等无用的代码文件
+优化：优化配置文件的的自动探测功能，防止在某些新手未编译直接运行找不到配置文件的问题
+优化：分布式任务注解 @EnableDistributedRunnable，并添加自定义的 redisKey 和 key 持有时间配置功能。
+文档：完善关于 Controller 和 数据库的相关文档
+
+
+
+jboot v3.13.8:
+修复：Junit 代码覆盖率测试可能出现多次启动的问题
+修复：JbootCron4jPlugin 停止后未移除已经停止任务的问题
+
+
+
+jboot v3.13.7:
+新增：MQ 新增 stopListening() 方法，可用于定制化关闭 MQ
+修复: Controller 返回值有大写可能不正确的问题
+
+
+
+jboot v3.13.6:
+优化：强化 Controller 返回值，自动匹配相应的 render
+优化：优化 JbootHttpImpl 和 JbootHttpResponse 代码，添加必要的日志输出
+优化：更新 Copyright
+
+
+
+jboot v3.13.5:
+新增：CookieUtil 添加 "defaultPath" 和 "defaultDomain" 的配置
+新增：HttpUtil 添加 http 代理的配置支持
+新增：Columns.addToFirst() 方法
+新增：JbootDirectiveBase.getParaToString()
+优化：RequestUtil.java
+优化：升级 JFinal 到最新版本
+
+
+
+jboot v3.13.4:
+新增：AttachmentManager 新增 getFile(path,localFirst) 方法
+优化：升级相关依赖到最新版本
+
+
+
+jboot v3.13.3:
+新增：配置文件可以指定自己的文件名和路径的支持
+优化：JbootmqBase，使之代码更加简洁
+优化：Mysql 驱动，默认优先使用 MySql8 驱动
+优化：升级相关依赖到最新版本
+
+
+
+jboot v3.13.2:
+新增：AOP 新增 javassist 的实现，方便在 jdk17 去掉 cglib
+修复：在配置前缀的场景下，修复 redis 缓存 removeAll() 无法正确移除数据的问题
+修复：SharedEnumObject 在 jdk17 下无法正常运行的问题
+修复：Fastjson 对某些数据无法正确序列化的问题，升级 fastjson 到最新版本
+
+
+
+jboot v3.13.1:
+新增：JbootDb 新增支持 Columns 的 findFirst 方法
+新增：QuietlyUtil.java 工具类
+新增：ReflectUtil.java 的若干方法，反射调用更加简单
+优化：Redis 缓存，存入 null 时，直接对 key 进行移除
+优化：MockHttpServletRequest 直接实现 HttpServletRequest 接口，而非 HttpServletRequestWrapper 继承
+优化：@TestConfig() 注解新增 printScannerInfo 参数，默认为 false
+优化：MockMvcResult.java  提高性能
+优化：优化网关代码，使代码更加清晰
+修复：移除 JbootModelConfig.idCacheCachePrefix 配置，否则会造成重复配置的情况
+
+
+
+jboot v3.13.0:
+新增：Jbootmq 的监听器（Listener）新增 MessageContext 参数，支持更多的消息配置
+新增：MockMvc 新增 upload 方法，用于对上传文件的测试
+优化：404 403 401 等错误输出 info 信息，而不是 warn
+优化：开放更多的 JbootMqImpl 方法
+优化：优化 Http 工具类，上传文件的时候添加 ContentType 信息
+
+
+
+jboot v3.12.5:
+新增：IdCache 默认的缓存前缀配置
+优化：AOP 缓存添加默认时间为 1 个小时
+优化：为 @Cacheable() 等注解添的key构建加更多的数据类型支持，支持集合和数组
+优化：升级相关依赖到最新版本
+
+
+
+jboot v3.12.4:
+新增：@FilterBy() 注解，用于对某些参数进行内容过滤
+
+
+
+jboot v3.12.2:
+新增：是否处理 404 页面的配置支持，方便与其他 web 框架整合
+新增：JbootAppListener 新增 onConstantConfigBefore() 方法
+优化：AttachmentManager.java，使之 getFile 不返回 null
+优化：JsonManager.me().setDefaultDatePattern 的默认配置
+
+
+
+jboot v3.12.1:
+优化：当 cglib 创建对象出错时，错误信息不明确的问题
+优化：Cache、MQ、Redis 的 Manager 在某些情况下可能出现 NPE 的问题
+优化：升级相关依赖到最新版本
+
+
+
+jboot v3.12.0:
+新增：SPI 新增直接配置类名的功能
+新增：MQ 新增支持多个实例配置的支持
+新增：Redis 新增配置多个实例的支持
+新增：Cache 缓存新增配置多个实例的支持
+新增：限流组件新增 IP 限流功能
+新增：限流组件新增 IP 白名单功能
+优化：Rokect MQ 新增更多的配置支持
+优化：移动 AOP 的默认配置到 "jboot.aop.cache"
+优化："jboot.model.idCacheType" 配置名称修改为 "jboot.model.idCacheName"
+优化："jboot.web.session.cacheType" 配置名称修改为 "jboot.web.session.useCacheName"
+优化：重命名 JbootConfigUtil 为 ConfigUtil
+文档：修改文档错误已经添加部分文档
+
+
+
+jboot v3.11.4:
+新增：新增 DAO.distinct() 方法，用于对内容进行去重
+新增：MockMvc 新增 holdCookie 配置，用于在不同的测试用例里，保持 cookie 的功能
+优化：保证 Model 和 Record 的 getBigInteger 的行为一致
+优化：移除 codegen 下的 PathKit 类，使用 CodeGenHelpler 代替
+
+
+
+jboot v3.11.3:
+新增：重写 Model 的 getBigInteger，防止转换异常
+新增：代码生成器 生成的 Model，如果字段是 BigInteger ，自动调用 getBigInteger 方法的功能
+优化：升级相关依赖到最新版本
+
+
+
+jboot v3.11.2:
+新增：Columns.containsName() 方法
+新增：SqlDebugger 新增对 Sql 输出到日志的实现方案，只要只有接口需要自己实现
+优化：捕获 ScheduledThreadPoolExecutor 所有业务异常，防止其意外终止调度
+优化：PaginateDirectiveBase，当其有数据的时候，显示分页内容
+优化：ClassScanner，新增某些排除对象
+优化：删除 CacheableInterceptor 一些不必要的 debug 信息
+
+
+
+jboot v3.11.1:
+新增：SqlDebugPrinter 新增是否打印 SQL 的独立开关
+新增：新增更多的 JbootApplication.createServer(...) 方法
+优化：升级JFinal、Jedis、Naocs、Dubbo 等到最新版本
+修复：AttachmentManager.use(name) 无法使用的问题
+
+
+
+jboot v3.11.0:
+新增：实验性新增 Restful 支持，默认关闭，可以通过 "jboot.web.pathVariableEnable=true" 开启，感谢 @没牙的小朋友
+新增：shiro 配置添加 filter 参数，自定义shiro相关的filter，感谢 @orangeJ
+优化：在shiro拦截器初始化时处理对应方法的注解，取消对路由、actionKey的倚赖，感谢 @orangeJ
+优化：修改 JbootActionMapping 拼写错误
+优化：AttachmentManager 新增多实例的支持
+优化：优化缓存前缀配置的方法名，否则可能会造成误解
+优化：同时修改 "jboot.web.escapeParas"配置为 "jboot.web.escapeParasEnable"
+修复：修正现有swagger实现中，会忽略ActionKey注解中的URL的问题，感谢 @没牙的小朋友
+
+
+
+jboot v3.10.8:
+新增：JbootCache 新增通过前缀了使用 "多实例" 的支持
+新增：Model、Db 动态设置默认数据源的支持
+新增：DatasourceConfig 新增表前缀配置的支持
+修复：由于 RPC 添加 Reference 缓存后，造成 Controller 多个 Service 无法注入的问题
+
+
+
+jboot v3.10.7:
+新增：JbootHttpRequest 添加 sslContext 的配置，方便自定义 ssl
+新增：JbootConfigManager 添加 setBootProperties 方法，方便用于添加启动配置
+新增：工具类 ReflectUtil 新增 searchFieldList() 方法
+新增：添加 TypeConverterFunc，用于处理前端传入枚举内容
+优化：JbootShiroInvokeListener，在 onInvokeBefore() 方法添加返回值 AuthorizeResult，更加方便整合 Jwt sso 等
+优化：升级 jedis/jsoup/jfinal/fastjson 等到最新版本
+
+
+
+jboot v3.10.6:
+修复：ClassScanner 添加排除的前缀时，如果有大写字母不生效的问题
+修复：当使用 @Api(collect={}) 时，子 Controller 路径错误的问题
+
+
+
+jboot v3.10.5:
+新增：@EnableLimit() 注解新增通过 redis 实现集群的限流的功能，感谢 @orangeJ
+新增：为 JbootRedis 增加 eval 方法，用于执行 lua 脚本，感谢 @orangeJ
+新增：redis 缓存增加 globalKeyPrefix 配置，解决多个应用共用一个 redis 实例时的 key 冲突问题，感谢 @orangeJ
+修复：JbootResourceLoader 在 Maven 二级目录下启动，无法扫描上级资源文件的问题
+修复：Sentinel 文档错误的问题
+
+
+
+jboot v3.10.4:
+优化：升级 JFinal-Weixin 到最新版本
+优化：添加 JbootActionReporter.colorRenderEnable 的配置
+修复：通过在 JFinal Routes 配置的 Controller，APIDoc 无法正常生成的问题
+
+
+
+jboot v3.10.3:
+新增：门户网关 Gateway 新增基于 Nacos 的自动服务发现的功能
+新增：JbootHttpImpl 新增默认的 Content-Type 配置
+新增：JbootHttpRequest 新增 "instanceFollowRedirects" 配置
+优化：允许 void 的 Controller 方法生成 retRemarks
+优化：添加 ApiOper.containerClass 配置，用于对 void 类型的 Controller 设置返回值
+优化：添加 ApiDocConfig.defaultContainerClass 配置，用于配置默认的 void Controller 返回值
+优化：对 HttpRequest 进行优化，保证 headers 和 paras 的顺序
+优化：删除 JbootGatewayHandler 默认添加的必要，修改为默认不添加此 Handler
+修复：@ApiPara.require() 在方法上不起作用的问题
+修复：Jboot 升级 JFinal 到最新版本后，代码生成器的路径错误的问题
+示例：新增 Gateway 通过 Nacos 自动发现的 Demo 示例
+示例：新增 WebSocket 的 Demo 示例
+
+
+
+jboot v3.10.2:
+新增：注解 @ApiPara() 增加 require 参数的配置，感谢 @lijiahong
+优化：Json 增加递归深度配置，修复多层级数据返回不完全问题，感谢 @lijiahong
+优化：升级 JFinal、jackson、Dubbo 等到最新版本
+修复：JbootPaginateDirective 在默认情况下无法获取 page 的问题
+修复：Redis 连接有密码时，Redis 集群时未设置 maxAttempts 连接权限不上问题，感谢 @lijiahong
+
+
+
+jboot v3.10.1:
+新增：ApiDoc 新增 allInOne 模式，方便把所有 api 生成到一个文档里
+新增：@Api() 注解新增 orderNo 的配置
+新增：可以通过 api-remarks.json 和 api-mock.json 为文档配置 json 输出
+新增 "ApiJsonGenerator"，用于生成通过数据库生成 api-remarks.json 和 api-mock.json 文件
+新增：ApiDoc 文档新增自定义排序 Comparator 配置的支持
+新增：ApiDoc 新增自定义 ApiMockBuilder 的支持，用于构建任意 Model 的 Mock 数据
+新增："@ApiResp" 注解，用于对 JFinal 通过 render 而非返回值的形式的支持
+新增：ApiDocument 等信息添加序列化的支持
+
+
+
+jboot v3.10.0:
+新增：apidoc 模块
+优化：JbootCaptchaCache 在某些情况下可能出现 NPE 的问题
+优化：升级 JFinal 到 v4.9.14 最新版本
+
+
+
+jboot v3.9.20:
+优化：由于 JFinal 紧急发布新版本，因此同步到 JFinal 最新版本
+修复：因为 ehcache 依赖默认并没有引入，将 session 的默认存储改为 caffeine。感谢 @orangeJ
+修复：@RequestMapping() @Path() 无法配置动态参数的问题
+
+
+
+jboot v3.9.19:
+新增：@MockClass() 注解，用于多 AOP 的 Class 进行 Mock
+新增：MockMvc 新增 requestStartListener 和 requestFinishedListener 的支持
+新增：@TestConfig.devMode 和 @TestConfig.launchArgs 配置的支持
+新增：MockMvcResult.getContentAsJSONObject() 和 assertJson() 方法
+新增：MockHttpServletRequest 新增 addQueryParameter() 方法
+新增：@DefaultValue() 注解，用与对参数配置默认值
+新增："jboot.sentinel.reqeustTargetPrefix" 配置的支持，用于配置 sentinel 对某些 url 进行拦截
+优化：优化控制台 action 的日志输出的性能
+优化：升级 JFinal 到最新版本
+优化：通过 MockMvc 进行单元测试的时候，若 Controller 发生 404 或者 500 等错误的时候，则不通过 junit 测试
+文档：添加验证器错误自定义渲染的相关文档
+文档：同步 junit 测试文档
+文档：修复 Sentinel 的里错误的配置文档
+
+
+
+jboot v3.9.18:
+新增：新增 @MockMethod 注解，方便对 AOP 方法进行 Mock
+新增：@TestConfig(autoMockInterface=false) 配置，方便对接口进行 Mock 操作
+修复：Motan RPC 框架的 protocol 配置不生效的问题
+修复：ide 配置错误时给出的 JFinal 配置帮助文档网址错误
+
+
+jboot v3.9.17:
+修复：JbootActionReporter 可能出现 NotFoundException 的问题
+修复：JbootActionReporter 可能出现 NPE 的问题
+修复：阿里云商业 MQ Aliyunmq 配置错误的问题，感谢 @不器
+文档：修改某些描述错误的文档
+
+
+
+jboot v3.9.16:
+修复：Junit 测试对于个别 ServletRequest 方法没有 mock 到而出错的问题
+修复：当 Jboot 有上层 session 时（比如使用 shiro），修改 Controller session 无法同步上层 session 的问题
+
+
+
+jboot v3.9.15:
+新增：新增单元测试的辅助类的支持
+新增：ActionReporter 新增 render 信息的输出功能
+新增：工具类 ReflectUtil.java
+优化：调整默认的JbootShiroInvokeListener实现，保存被拦截的请求便于后续跳转使用，感谢 @没牙的小朋友
+修复：jboot.properties配置文件中 jboot.shiro.ini 配置未生效的问题，感谢 @没牙的小朋友
+修复：在某些情况下 PathKit.getWebRootPath 得到错误结果的问题
+
+
+
+jboot v3.9.14:
+新增：为 undertow 新增默认的 content-type，解决 mp4 等视频不能播放的问题
+新增：ValidErrorRender，方便用户自定义 "数据验证" 错误的渲染器
+修复：当 Interceptor 被 cglib 代理时，无法正确输出其日志的问题
+
+
+
+jboot v3.9.13:
+新增：新增配置 "jboot.app.listener"，用于配置可以执行的 appListener
+新增：新增配置 "jboot.json.skipModelAttrs" 和 "jboot.json.skipBeanGetters" 配置
+优化：JbootGatewayHandler 默认添加在系统里，方便进行动态路由
+优化：JbootGatewayHealthChecker 的代码
+优化：升级 JFinal 等依赖到最新版本
+优化：对 ClickHouse 高级版本 驱动 进行适配
+修复：代码生成器在某些情况下输出的 html 不是 utf8 编码的问题
+修复：WeightUtil 判断错误的 bug
+
+
+
+jboot v3.9.12:
+新增：devModel 可以动态配置，方便在某些场景下切换 devMode
+修复：在某些极端场景下，PathKit.getWebRootPath() 可能出错的问题
+修复：当查询的 Page 为 null 时，分页的总页数数据错误的问题
+
+
+
+jboot v3.9.11:
+新增：注解 @ActionKey() 支持 ./ 相对路径的配置
+新增：门户网关拦截器新增对 Header 的配置
+新增：JbootActionReporter 的开关配置，而不是由 devMode 决定
+优化：门户网关的健康检查代码抽离为独立的类 JbootGatewayHealthChecker
+优化：门户网关 NoneHealthUrlErrorRender 重构为 GatewayErrorRender，支持更多的错误渲染
+优化：门户网关可以通过拦截器自定义前端渲染功能
+优化：简化 RPC 的默认配置
+优化：优化 JWT 的代码逻辑
+优化：升级 JFinal、Seata 等到最新版本
+优化：优化 ConfigUtil 的参数解析方法
+优化：优化 FastJsonSerializer 的逻辑代码
+文档：优化序列化的相关文档
+
+
+
+jboot v3.9.10:
+新增：Dubbo Method 的 oninvoke/onreturn/onthrow 配置的支持
+新增：不同的 @RPCIject 持有不同 RPC 对象的支持
+优化：当 provider 未启动，但是开启 check 后无法注入，但提示信息不明确的问题
+优化：升级 jackson、dubbo 等到最新版本
+修复：ConfigUtil 在读取 Object 时可能出错的问题
+修复：RPCUtil 在配置 default 有时可能无效的问题
+修复：Dubbo 版本升级后，不再支持对 consumer 的 protocol 配置
+修复：Dubbo 升级到 2.7.10 后，若不配置直连协议，启动出错的问题
+
+
+
+jboot v3.9.9:
+新增：@TxEnable() 注解的支持，方便在 Service 进行事务处理
+优化：优化 JsonBodyParseInterceptor.java 代码
+优化：升级 JFinal、FastJson 等到最新版本
+修复：泛型的 Controller 无法覆盖子类 Action 的问题 [#I3FG0B](https://gitee.com/JbootProjects/jboot/issues/I3FG0B)
+修复：使用 @JsonBody 注解，同时使用 泛型 的 Controller 在 openJdk 下可能出错的问题
+修复：paginateByColumns 传入复杂的 Order By 可能产生错误的问题
+文档：修复 Dubbo 文档 url 路径错误的问题
+
+
+
+jboot v3.9.8:
+新增：@GetMapping() 和 @PostMapping() 的支持
+新增：@JsonBody() 注解支持 LocalDate 和 LocalDateTime
+新增：@JsonBody() 注解支持在 Class 定义泛型的功能
+优化：控制输出的 Action 时间执行时间，包含了模板引擎的渲染时间。
+优化：Jwt 拦截器构建器的代码
+优化：门户网关的 Http 代理代码
+优化：升级 Nacos 等依赖到最新版本
+
+
+
+jboot v3.9.7:
+新增：@Lazy 懒加载注入的功能
+新增：JbootController.getOrginalRequest() 方法，用于获取进过 Xss 处理后的原始 Request
+新增：JbootDirectiveBase.getParaToBigDecimal() 的系列方法
+新增：Interceptors.addIfNotExist() 方法，用于对某些注解进行单次添加
+新增：JbootController.getParaToBigDecimal() 和 getParaToBigInteger() 方法
+优化：重命名 JFinalEnumObject 为 SharedEnumObject
+优化：Validator 验证错误的时候，错误信息给出错误的相关字段
+修复：通过 @JFinalShareEnum 添加枚举，在某些极端情况下无法调用枚举静态方法的问题
+
+
+
+jboot v3.9.6:
+新增：门户网关动态配置拦截器的功能（之前只能通过配置文件进行配置）
+新增：门户网关动态配置负载均衡策略的功能（之前只能通过配置文件进行配置）
+新增：columns 新增 groupBy() 和 having() 的方法，方便构建 group by 的 SQL
+新增：新增 jboot.web.escapeParas 配置，方便全局对 xss 进行防护
+优化：升级 JFinal、HikariCP、metrics、Shiro 等到最新版本
+修复：使用 @Bean 注解，然后 Jboot.getBean() 通过 Bean Name 获取不到对象的问题
+修复：Redis 缓存的 removeAll() 和 getKeys() 在某些情况返回数据不正确的问题
+
+
+
+jboot v3.9.5:
+新增：CacheInterceptorBuilder.Util 工具类，用于对拦截器的判断
+优化：重构 @Configuration 对 @Bean 的初始化工作
+优化：JbootCglibCallback 对没有拦截器的方法的调用
+修复：在热加载的情况下，JbootCoreConfig 无法转换为 JFinalConfig 的问题
+
+
+
+jboot v3.9.4:
+新增：@JfinalSharedEnum 注解的支持，方便把枚举添加到模板引擎里使用
+新增：@PostConstruct 注解的支持，方便 Bean 在被创建的时候进行初始化
+优化：ApplicationUtil.runInFatjar 的判断
+文档：更新 MVC、MQ、Gateway 等文档
+
+
+
+jboot v3.9.3:
+新增：门户网关没有健康网关时可以自定义渲染器的功能
+优化：Gateway 门户网关的性能
+优化：GatewayInterceptpor 拦截器可以获得当前的代理目标 URL 地址功能
+修复：@DecimalMax 和 @DecimalMin 在某些极端情况下可能验证错误的问题
+文档：更新 MQ、Sentinel、Gateway、Validator 等文档
+
+
+
+jboot v3.9.2:
+新增：门户网关 Gateway 的健康检查功能
+新增：JbootModel.closeIdCacheTemporary() 通过这个方法可以一次关闭ID缓存
+新增：Controller 新增 getJwtParaToInt 等系列方法
+新增：JbootHttpRequest 新增 readBody 配置，用于在某些情况下不读取 http body
+优化：StrUtil.queryStringToMap 方法
+优化：优化门户网关的若干方法，添加必要的注释
+优化：升级 JFinal、Sentinel、Seata 等到最新版本
+修复：修复 clickhouse 在某些情况下，分页可能出错的问题
+
+
+
+jboot v3.9.1:
+修复：JbootModel.loadCache 在某些情况下出错的问题
+修复：分布式配置启用 Apollo 后可能出现空指针的问题
+
+
+
+jboot v3.9.0:
+新增：Clickhouse 数据源的配置和支持
+新增：Rocketmq 作为 mq 底层通信的支持
+新增：ValidUtil.setValidator() 方法用于自定义自己的 Validator
+新增：ValidateInterceptorUtil.setValidExceptionRetBuilder 用于渲染自定义验证错误信息
+新增：jboot.model.idCacheByCopyEnable 配置用于开启 id 缓存的时候是否返回 copy 的对象
+优化：优化 Rabbitmq 和 阿里云商业 MQ 的支持
+优化：修改 Validate 返回数据的 errorCode 的值为 400
+优化：重命名 ControllerUtil 为 JbootShiroUtil
+优化：JbootController 去获取 Jwt 内容的时候，不配置 secret 只会发出警告而不是抛出异常
+优化：重置 Rabbitmq 的 broadcastQueuePrefix 配置为 broadcastChannelPrefix
+
+
+
+jboot v3.8.1:
+优化：增强 Sentinel 与其控制面板设置的能力，增加数据源配置，并可以通过阿里云 AHAS 进行完全控制
+优化：升级 Undertow 的 devMode 默认值为 false，防止在 devMode 的情况下，不同的 classloader 导致获取不到数据查询实例的问题
+修复：修复分布式 Seata 的 bug 、升级 Seata 到最新版本并添加相关测试代码，感谢 @菜农
+修复：修复 Rabbitmq 在某些情况下出现 bug 的问题，并添加相关测试代码
+
+
+
+jboot v3.8.0:
+新增：代码生成器生成 Service 的前缀和后缀配置
+优化：升级 Jfinal、Jfinal-undertow、Jfinal-weixin 等到最新版本
+优化：AopFactory 优化对 @Configration 的空注解的构建
+优化：完全重构 Metrics，添加对 Prometheus 的输出
+
+
+
+jboot v3.7.8:
+修复：修复 v3.7.7 的 Aop.get(Interface.class) 在某些情况下无法获取服务的问题
+
+
+
+jboot v3.7.7:
+优化：优化 @Configuration 注解初始化流程
+优化：AOP 对接口或者抽象类进行注入，但有找不到其实现类的时候可能出现 methodNoFund 的错误
+修复：通过 @Bean(name=xxx) 注解去定义 Service 时在某些情况下可能无法正常获取的问题
+
+
+
+jboot v3.7.6:
+新增：新增默认的 DriverClassNames，当用户不配置的时候使用默认的进行配置
+新增：JbootController.getJsonBody() 的方法
+优化：默认添加 validation-api 验证框架依赖
+优化：DateUtil 当前端传入 null 值的时候有适合的返回值
+优化：jwt 拦截器提高性能，并新增清空 jwt 数据的方法
+修复：JbootController.toBigDecimal 当已 N 开头时解析不对的问题
+
+
+
+jboot v3.7.5:
+新增：支持更多的验证注解，比如 Digits DecimalMax DecimalMin Positive Negative 等
+新增：支持在 Service 任何被注入的方法里进行验证
+新增：JbootApplication 运行下 fatjar 的时候，支持在同级目录下读取 jboot.properties 文件
+
+
+
+jboot v3.7.4:
+新增：NotNull、NotBlank、NotEmpty、Valid、Pattern、Min、Max、Size、Email 等验证注解
+新增：RequestUtil.isJsonContentType() 方法
+优化：NotEmpty、Regex 等验证返回更加当前请求类型返回 json 内容
+优化：JbootErrorRender，当发生错误的时候，对 ajax 请求返回 json 内容
+优化：移除注解 Weight 的默认值
+修复：JbootController.getRawObject 在某些情况下可能出现异常的问题
+修复：使用 Autoload 注解，同时配置 Weight 不生效的问题
+
+
+
+jboot v3.7.3:
+新增：JbootController 新增 getRawObject(TypeDef) 方法，可以获得指定泛型数据
+优化：JsonBodyParseInterceptor 的解析效率
+优化：JbootController 的 getRawObject 的效率
+修复：当最后一个节点是数组而去获取指定 index 的 Object 时，返回 null 的问题
+
+
+
+jboot v3.7.2:
+新增：@JsonBody 新增新的 JsonKey 语法支持
+新增：JbootController 新增传入 JsonKey 获取数据
+
+
+
+jboot v3.7.1:
+新增：DateUtil 新增 getStartOfDay()  和 getEndOfDay() 两个方法
+新增：@JsonBody 支持多 Date 类型的注入
+优化：DateUtil 支持更多的自动 parse 方法
+修复：@JsonBody 对原始数据类型的注入为 null 是不正确的问题
+
+
+
+jboot v3.7.0:
+优化：提高在 Controller 有多个 @JsonBody 参数时 JsonBodyParseInterceptor 解析性能
+修复：JsonBodyParseInterceptor 在解析原始数据参数出错的问题
+修复：JbootJedisImpl 在某些情况下配置 database 无效的问题
+
+
+
+jboot v3.6.9:
+新增：@JsonBody 新增对 set 的支持
+优化：升级 JFinal、Undertow、Jackson 等到最新版本
+
+
+
+jboot v3.6.8:
+新增：Controller 参数新增 @JsonBody 的支持
+新增：Http 工具模块添加更多的配置，方便在 fatjar 模式下能配置 https 相关证书
+新增：ErrorRender 自动判断前端是否需要 json 渲染，当请求头是 application/json 的时候自动渲染错误的 json
+
+
+
+jboot v3.6.7:
+优化：JbootSimpleApplication，使之代码更加简洁
+优化：优化缓存拦截器对方法的 key 进行构建，提高性能
+优化：默认为 JbootAccessTokenCache 添加 2 个小时的缓存时间
+优化：LocalAttachmentContainer，默认保存文件的时候，对文件进行相同文件验证
+优化：JwtManager 对 Jwt 解析出错或没有 Jwt 数据时，返回常量 map
+
+
+
+jboot v3.6.6:
+新增：AttachmentManager 新增保存文件的若干方法
+修复：DateUtil 某些方法不正确的问题
+
+
+
+jboot v3.6.5:
+新增：控制台信息打印新增 RawData 的内容打印，方便开发调试
+优化：优化通过 JbootSimpleApplication 启动 RPC 服务时控制台的输出信息
+修复：Jboot 在某些特殊场景下对 fatjar 运行模式判断不正确的 bug
+修复：通过 JbootSimpleApplication 启动时，Pathkit 无法正确获取路径的问题
+
+
+
+jboot v3.6.4:
+修复：DateUtil 的 bug，和新增若干方法
+优化：StrUtil.mapToQueryString 的方法
+
+
+
+jboot v3.6.3:
+新增：DateUtil 工具类，方便对日期进行计算或转换
+新增：StrUtil.queryStringToMap 和 StrUtil.mapToQueryString
+优化：JbootCaptchaCache 进行缓存 Captcha 时，配置过期时间
+修复：CORSInterceptorBuilder 构建跨域注解拦截器时，注解在类上获取错误
+
+
+
+jboot v3.6.2:
+新增：控制台新增 Jwt 参数内容的打印，方便调试开发
+新增：jboot.app.resourceLoaderEnable 配置，在 dev 模块下可以关闭 resourceLoader
+优化：重命名 JbootInvocation 为 JbootActionInvocation
+
+
+
+jboot v3.6.1:
+新增：JbootCaptchaCache 方便在分布式的场景下进行验证码验证
+新增：JbootTokenCache 方便在分布式下进行 token 验证
+新增：JbootLock，方便在本地模式下分布式模型下进行锁机制编写
+优化：RequestMapping 注解添加空字符串 "" 配置的支持
+优化：移动 JbootAccessTokenCache 的包名
+优化：重构 JbootCounter，使其在单体模型下和分布式场景下有一致的特征
+
+
+
+jboot v3.6.0:
+新增：ClassUtil.hasClass 方法，用于判断一些第三方组件依赖
+新增：Model 新增 @JsonIgnore 注解，用于配置某些不输出的字段
+新增：Model 新增 FastJson 的注解 @JsonField 的配置支持
+新增：新增对 JFinal 最新版本 @Path 的配置支持
+新增：DAO 查询的时候，支持通过 loadColumns() 方法配置其查询的列
+修复：Columns组装sql工具类in()、notIn()方法新增安全模式检查参数是否为空，解决安全模式下，List不为null，但没有元素时跳过安全检查。感谢 @liuenxin
+优化：Columns.in() 和 Columns.notIn 修改参数 List 为 Collection
+优化：升级 JFinal、Fastjson、Nacos 等到最新版本
+优化：为 Json 的相关代码创建独立包
+优化：重构 JbootJson 使之代码更加简洁
+优化：重命名 SqlDebugger.debug 为 SqlDebugger.run，删除其不必要的方法
+优化：优化 AopCache，使之在缓存数据错误时，自动刷新缓存信息
+文档：更新 json 的相关文档
+
+
+
+jboot v3.5.9:
+新增：StrUtil.obtainDefault 方法用于替代 obtainDefaultIfBlank 方法
+新增：jboot.web.cookieMaxAge 的配置支持，用于配置默认的 cookie 保存时间
+优化：提升配置参数 ${xxx} 解析性能
+优化：JbootController 的代码注释错误
+优化：ClassScanner
+文档：优化 motan rpc 的构建文档，增加必要的说明，感谢 @zcoder
+文档：新增 Nacos 分布式配置下的一些文档
+
+
+
+jboot v3.5.8:
+新增：StrUti.obtainDefault 替代 obtainDefaultIfBlank
+优化：JbootAopFactory，新增 @Bean 注解对非接口类的支持
+优化：ApolloConfigManager 对 Apollo 配置的管理
+修复：修复 Redis 缓存 removeAll 在某些情况下错误的问题
+
+
+
+jboot v3.5.7:
+新增：JbootRedis 新增 scan 方法
+优化：JbootRedisCache 的 getKeys removaAll 等方法使用 scan 去读取 keys
+优化：重构 Jwt 模块，使之代码更加简洁
+
+
+
+jboot v3.5.6:
+新增：Jboot 通过 columns 查询新增设置主表别名的支持
+优化：重构 SqlDebugger，控制台实时输出 Sql 的执行时间，方便对 Sql 进行优化
+优化：SwaggerController，兼容请求地址结尾没斜杠json加载失败问题，感谢 @xiaoyu512
+优化：优化 JbootRpcBase onStart 方法，减少子类复写时调用不必要的方法
+修复：高并发下，第一次去获取 RPC 服务时，可能为 null 的问题，感谢 @huangzekai_1
+文档：优化 json 相关文档注释不明确的问题
+
+
+
+jboot v3.5.5:
+新增：JbootCaptchaRender 渲染，可以自定义动态码的内容
+新增：AopCache 新增 setAopCache 方法，方便通过代码配置 Aop 缓存
+优化：重构 JWT 模块，使之在调整 Jwt 拦截器顺序时也可以正常工作
+优化：移除 JbootAopInvocation，使代码更加简洁
+优化：Utils.putDataToCache 方法，使其更加便于阅读
+优化：优化 Redis 订阅模块，使其在应用关闭时主动断开连接
+优化：升级 fastjson、druid 等到最新版本
+
+
+
+jboot v3.5.4:
+优化：使用 InterceptorBuilder 重构 Sentinel 模块，使代码更加简洁
+优化：使用 InterceptorBuilder 重构 Seata Tcc 模块，使代码更加简洁
+优化：Interceptors 可以通过 Class 直接添加，而无需添加具体的实例
+优化：更新 JFinal、JFinal-undertow 等到最新版本
+优化：移动 MixedByteArrayOutputStream 所在的包目录
+修复：解决CGLIB代理下获取不到 @Weight 注解问题，感谢 @huangzekai_1
+
+
+
+jboot v3.5.3:
+优化：CaffeineCacheBuilder 构建器可能根据名称进行构建
+优化：提高 CDN 渲染的构建性能
+修复: Caffeine Cache 在某些极端情况下可能存在多份 Cache 的问题，感谢波总 @JFinal
+修复：当 Render 发生错误时，html 页面无法再次渲染 500 错误页面或者异常信息的问题
+
+
+
+jboot v3.5.2:
+优化：InterceptorBuilderManager，添加移除 Builder 等方法及其相关测试
+优化：ClassUtil，完善 singleton 等方法
+优化：Jboot 缓存默认类型 由 ehcache 修改为 caffeine
+优化：优化启动输出内容 和 sql 打印内容
+优化：JbootRender，当不启用 CDN 的时候进一步提升性能
+修复：AttachmentManager，当分布式文件不存在时，访问文件出现空指针的问题
+
+
+
+jboot v3.5.1:
+优化：JbootRedisCacheImpl buildKey() 方法
+优化：JbootJson 并新增更多的配置
+优化：InterceptorBuilderManager 的方法名并添加更多可配置的方法
+
+
+
+jboot v3.5.0:
+新增：InterceptorBuilder 组件，方便对 Controller 或者 AOP 对象的拦截器进行构建
+优化：移除 FixedInterceptor 组件，其可以通过 InterceptorBuilder 进行替代
+优化：新增 Controller 方法是否被正常执行的 log
+优化：优化 AttachmentManager 对分布式文件的渲染流程
+
+
+
+jboot v3.4.3:
+新增：指令 @JFinalDirective 新增 override 配置，用于覆盖系统已经内置的指令
+优化：优化 AttachmentManager，使之更加方便的上传 获取文件
+
+
+
+jboot v3.4.2:
+修复：当使用 Apollo 配置中心时，在某些场景下会导致 devMode 判断不正确的问题
+优化：重构 PaginateDirectiveBase，使之显示更加 "人性化" 和支持更多的功能配置
+
+
+
+jboot v3.4.1:
+修复：在 fatjar 模式下，通过 --jboot.app.mode 启动参数配置应用模式无效的问题
+修复：在 fatjar 模式下，不同位置的 java -jar 启动可能会导致 ClassScanner 两次扫描 jar 拖慢启动速度的问题
+修复：paginate 分页方法无法正确输出 sql 的问题
+
+
+
+jboot v3.4.0:
+新增：门户网关 Gateway 新增自定义负载均衡策略的支持
+新增：AttachmentContainer 组件，方便自定义把附件上传到其他第三方任何平台
+新增：全新的文档地址 和 Jboot 官网
+修复：数据源 Datasource 的  validationQuery 属性配置不生效的问题
+修复：SqlDebugPrinter 对参数为 Boolean 数据输出的格式不正确的问题
+优化：升级 Sentinal、Metrics、JFinal-Weixin 等到最新版本
+优化：删除 JbootActionReporter 一些不必要的方法
+优化：删除一些不必要的 注释信息
+优化：修改 JbootPaginateDirective 自动去获取当前的 page 信息，而不需配置
+优化：移除 JbootHttpImpl 默认的 content-type 配置
+优化：重构 Metrics 读取的相关处理，在 Metrics 未配置的时候，没必要添加相关 Handler，提升性能
+
+
+
+jboot v3.3.5:
+修复：通过门户网关下载文件 或者 渲染图片可能出现乱码的问题
+优化：重构 Http 工具类里的 HttpRequest 里的某些方法
+优化：增强 JbootActionReporter 功能，使之可以输出未被执行的拦截器 以及 Controller 的执行时间
+
+
+
+jboot v3.3.4:
+修复：当 Action 定义在父类后，JbootActionReporter 获取不到 Method 而出错的问题
+优化：升级 nacos 和 Apollo 客户端到最新版本
+优化：JbootHttpImpl Post 提交数据资源可能存在不正常关闭的情况
+
+
+
+jboot v3.3.3:
+修复：JbootActionReporter 对拦截器 Interceptor 输出的行号不正确的问题
+
+
+
+jboot v3.3.2:
+新增：新增 JbootActionReporter 用于代替 JFinal 的 ActionReporter，更精准的地位方法
+优化：重命名 ParaValidateInterceptor 为 ValidateInterceptor
+修复：@EmptyValidate @RegexValidate 的 message 在 ajax 上提示不正确的问题
+
+
+
+jboot v3.3.1:
+新增：Seata tcc 的支持
+新增：RegexValidate 注解对 Controller 进行验证的支持
+优化：ClassScanner 排除对 protobuf 扫描
+优化：JbootUndertowConfig 排除对 Jboot.java 的依赖
+优化：升级 JFinal、FastJson 等到最新版本
+
+
+
+jboot v3.3.0:
+新增：ObjectUtil 工具类，用于对 Object  进行对比等操作
+新增：JbootModel.useFirst() 方法，更加方便在读写分离的场景下进行使用
+新增：JsonTimestampPattern 配置，方便控制 json 的日期输出
+新增：JbootServiceBase.findListByIds() 方法
+新增：Columns 新增 safeCreate 方法
+优化：重构 JbootConfigChangeListener ，方便监听远程配置的每个值的变化
+优化：JbootServiceBase.syncModels 由传入 List 修改为 Collection
+优化：升级 Seata 到最新版本 1.3.0
+优化：升级远程配置 nacos、Apollo 到最新版本
+优化：删除 JbootrpcManager 里的某些无用的逻辑判断
+修复：当有多数据源时，join 会参数数据不正确的问题
+修复：当主键是 String 类型时，DAO.findListByIds() 没有返回数据的问题
+修复：CookieUtil 当设置的时间为 0 或者 -1 的时候，时间验证不正确的问题
+
+
+
+jboot v3.2.9:
+修复：Columns.in() 对传入 int[] long[]  short[] 不能正确支持的问题
+
+
+
+jboot v3.2.8:
+新增：Columns.toWherePartSql() 方便构建 sql
+新增：ObjectFunc.java 方便通过 Java8 lambda 调用
+新增：JbootServiceJoiner.joinMany 方法，方便进行一对多的查询
+新增：JbootServiceJoiner.joinManyByTable  方法，方便通过第三映射表进行多对多查询
+新增：JbootServiceJoiner.syncModels 方法，用过同步数据到数据库
+修复：Columns.likeAppendPrecent 传入空数据时结果出错的问题
+修复：Seata 对 dubbo 的 SPI 过滤器文件名错误的问题
+优化：当 jwt 解析出错时，输出错误的日志信息
+优化：重命名 joinById() 为 joinByValue()，因为传入的值不一定只是 id
+文档：新增 一多一、一对多、多对多查询的相关文档
+
+
+
+jboot v3.2.7:
+优化：修改 JbootModel.buildIdCacheKey 为 protected 修饰，方便在某些情况下进行重写。
+优化：Columns 在 safeMode 模式下，当传入 null 值时，直接抛出空指针异常，更加方便开发调试。
+
+
+
+jboot v3.2.6:
+修复：Columns 调用 unUseSafeMode 后可能存在问题的 bug
+
+
+
+jboot v3.2.5:
+新增：Columns 查询添加 safeMode ，使用 safeMode 当传入的查询值 null 值的 sql 参数时，不对齐忽略直接返回空数据。
+优化：升级 fastjson、jackson Json 等到最新版本
+修复：JbootAppListener 无法进行正确注入的问题
+
+
+
+jboot v3.2.4:
+优化：ClassScanner 和  JbootJson
+新增：为 JbootJson 新增 camelCaseToLowerCaseAnyway 配置，默认为 false
+
+
+
+jboot v3.2.3:
+优化：升级 fastsjon 到最新版本 1.2.71
+修复：Model 的 getter 方法无法输出 json 的问题
+
+
+
+jboot v3.2.2:
+优化：当项目启动的时候，优先初始化中央配置，以防止 undertow 端口等无法在中央仓库配置的问题
+优化：新增 Columns.in(list) 和  Columns.notIn(list) 方法
+优化：新增 Columns.append() 方法用于追加一个新的 columns
+优化：Json输出默认使用驼峰的字段风格
+优化：升级 Nacos、Fastjson 等到最新版本
+修复：通过 Columns 查询 count，当有 left join 时会出现数量不正确的问题
+修复：当 RPC 注解有 ${} 时，无法读取配置内容的问题
+文档：修改配置文件里的示例带有双引号的错误配置
+文档：优化 PRC 的相关文档
+
+
+
+jboot v3.2.1:
+优化：升级 JFinal-Undertow、JFinal-Weixin 到最新版本
+优化：完善支持更多关于 druid 的数据源配置
+优化：当未配置任何第三方日志组件的时候，自动使用 JDK 日志进行输出
+优化：添加 JbootRedirectRender，防止 nginx -> jboot 跳转时的错误问题
+优化：移除 @ValidatePara 注解 和 UrlParaValidate 验证拦截器
+优化：移除  Jboot 的 @EnableCORS 注解，使用 JFinal 自带的来替代
+优化：修改某些变量命名不直观的问题
+优化：默认情况下完全禁用 Fastjson 的 autoType 功能
+文档：添加 dubbo rpc 下的 restful 配置文档
+
+
+
+jboot v3.2.0:
+新增：JbootController 新增 getParaToBigInteger()、getParaToBigDecimal() 等方法
+新增：门户网关新增 hasException() 方法，用于判断目标地址是否可以正常访问
+优化：升级 JFinal、jackson、HikariCP、Dubbo 等相关依赖到最新版本
+文档：配置相关文档添加动态配置的相关描述
+文档：数据库配置相关添加多数据源的相关描述
+
+
+
+jboot v3.1.9:
+新增：Jboot.configValue(key,default) 方法
+新增：JbootAppListener.onStartFinish()方法，用于不同的 Module 在 onStart 进行操作。
+修复：当在配置文件中配置的内容为 '{' 字符开头的时候会出现 ArrayIndexOutOfBoundsException 异常的问题
+优化：升级 Seata 到 v1.2.0 最新版本
+优化：移除 rpc 服务暴露成功后的日志输出
+优化：统一 JbootCron4jPlugin.addTask() 中的 deamon 参数默认为 false
+优化：重命名 app/config/Utils 为 ConfigUtil
+优化：重构 Restructure AnnotationUtil.get()，以便支持更加灵活的参数配置
+
+
+
+jboot v3.1.8:
+新增：Gateway 新增动态注册路 和 移除由配置的功能
+新增：Gateway 被 Sentinel 拦截后自定义返回 Json 的功能
+新增：Gateway 新增对多个 host 的支持，默认走随机匹配的负载均衡机制
+新增：新增 Dubbo 下的对 consumer/provider/register/protocol 的默认配置的支持
+优化：修改 JbootServiceBase 的 DAO 属性类型为 JbootModel<M>
+优化：优化 JbootrpcBase 和 Prop 的一些输出日志
+优化：重命名 PRCUtils 为 PRCUtil，保持 Jboot 工具类统一
+优化：重命名 JbootRpcApplication 为 JbootSimpleApplication
+优化：重构 DubboUtil 代码，使之更加简洁
+优化：使用JsonKit来替换 FastJson 的直接使用，解决开发场景中使用其它json库的情况下，不会出错，感谢 @ yangyao
+优化：升级 Guava 等相关的 Maven 依赖到最新版本
+修复：修复 ClassScanner 扫描不到 Shiro 指令的问题
+修复：JbootGatewayManager 默认名字配置错误的问题
+修复：PRCUtil 无法添加某些注解注解属性导致@RPCInject某些参数无效的问题
+修复：启用分布式配置 Nacos 时，在 Nacos 配置的中文会出现乱码的问题
+修复：使用 Motan RPC 框架时，出现引用错误的问题
+修复：Dubbo 下的一些 consumer 配置失效的问题
+修复：修复 fatjar 打包的时候，需要单独配置 BaseTemplatePath，否则出错的问题
+文档：优化 gateway 的相关文档
+文档：优化 config配置 的相关文档
+文档：优化 rpc 的相关文档
+
+
+
+jboot v3.1.7:
+新增：JWT 可以通过 request para 传入数据的支持
+修复：复写 ActionHandler.getAction 可能无效的问题
+优化：排除 Jboot 内部不必要的 Class 扫描
+
+
+
+jboot v3.1.6:
+新增：JbootReturnValueRender，用于可以在 Action 里进行返回值渲染
+新增：ResponseEntity，可以直接在 Action 返回其进行渲染
+优化：对 JbootGatewayConfig 网关配置进行优化，用户配置了错误的 uri 时会给出提示
+优化：升级 Dubbo、Motan、Sentinel、Nacos 等到最新版本
+优化：ClassScanner 添加一些常用的排除 jar 和 class
+优化：更多关于 Nacos 分布式配置中心的配置支持
+修复：RPCUtils.copyFields()  无法正确复制配置内容的问题
+修复：JbootRpcApplication 无法正确启动插件和拦截器的问题
+文档：修改 AOP 文档的内容错误问题
+文档：完善分布式配置中心对 Nacos 以及 Apollo 支持的相关文档
+
+
+
+jboot v3.1.5:
+新增：新增 Motan RPC 的 export 和 host 的相关配置以及test代码
+新增：JbootJson 支持驼峰式 JsonKey 输出，感谢Gitee的 @herowjun
+新增：新增 Controller 对返回值自动渲染的功能
+新增：JbootRPCConfig 新增默认 version 和 group 配置的支持
+优化：ClassScanner 添加无需扫码的 jar 排除，速度更快
+修复：ClassScanner 在 Windows 平台下可能存在重复扫码而拖慢启动速度的问题
+修复：门户网关 GatewayHttpProxy 在 POST 时的某些情况下会出现无法正确代理的问题
+文档：完善 RPC 配置的相关文档
+文档：完善 Gateway 配置的相关文档
+文档：添加 fatjar 打包的相关文档
+文档：完善 fatjar 部署运行的相关文档
+
+
+
+jboot v3.1.4:
+优化：重构 ClassScanner ，提高在 fatjar 模式的扫描性能
+优化：重构 ConfigManager ，以便更好的支持 fatjar 模式下的配置文件读取
+优化：重构 JbootCoreConfig，方便在 fatjar 下能够准确读取 html 等资源文件
+优化：重构 JbootCoreConfig，把 JFinal-Weixin 设置非必须依赖
+
+
+
+jboot v3.1.3:
+新增：新增对 JDK11+ 的支持
+
+
+
+jboot v3.1.1:
+新增：Gateway 网关自定义拦截器的支持，方便通过网关进行鉴权等操作
+新增：Gateway 网关新增错误重试次数的配置，方便网关重试配置
+新增：jboot.properties 配置里的 value 值添加 ${para} 参数的支持
+新增：undertow 端口配置，添加 -1 的支持，通过 -1 配置可用的随机端口
+新增：JbootRpcApplication，方便用于只启动 RPC Service 服务，用于给消费者提供服务
+修复：修复 @RPCInject 在拦截器使用的时候出错的问题
+修复：RPC 工具类 Utils.appendAnnotation 无法正确给 int 、boolean 参数赋值的问题
+优化：当不对 Dubbo 的 qos 配置的时候，设置为默认关闭，方便单机情况下进行开发调试
+文档：更新 Gateway 网关的相关文档
+
+
+
+jboot v3.1.0:
+新增：新增网关的支持，路由规则支持 host、path、query等 三种模式，同时支持基于 Sentinel 的限流配置
+新增：新增对 Dubbo 多协议、多注册中心等的支持
+新增：新增对注解 @Configuration 的支持，可以通过其构建 name 实例
+新增：JbootAopInterceptor 可以动态的添加或者移除拦截器
+新增：配置文件可以配置 Map、Set、List 和 数组的支持
+新增：JbootCache 新增可以获取素有 Names 的功能，方便对缓存进行运维
+新增：JbootCache 新增可以对分布式缓存进行刷新，方便对缓存进行运维
+新增：jboot-system.properties 的支持，用于替代启动参数的 -D，使用第三方组件的时候更加方便
+修复：修复 JbootHttpImpl 无法上传文件的bug
+修复：修复 JbootHttpImpl 无法正确获取 gzip 压缩内容的问题
+优化：重构 RPC 的模块，使之更加简单清晰
+优化：升级 fastsjon 等相关依赖到最新版本，修改某些错误单词拼写的方法名等
+文档：完善 AOP 的相关文档
+文档：完善 Sentinel 限流的文档
+文档：完善 RPC 的相关文档
+文档：新增 网关配置使用的相关文档
+
+
+
+jboot v3.0.5:
+修复：SqlBuilder 在某些极端情况下生成 SQL 的一些问题
+优化：移除 Jboot 的一些过时的方法
+
+
+
+jboot v3.0.4:
+新增：Jboot MQ 新增 Local 类型
+新增：sqlPart 支持参数设置
+优化：修改 Columns.string() 为 Columns.sqlPart()
+优化：JbootModelConfig 的 primarykeyValueGenerator 和 Filter 支持通过 api 动态配置
+优化：StrUtil.isNumeric、isDecimal、isEmail 等方法
+优化：完善 JbootCounter 功能
+修复：当 Columns.group() 内容为空的时候，构建了错误Sql的问题
+修复：Columns.isNullIf 条件判断错误的问题
+
+
+
+jboot v3.0.3:
+新增：Cache 模块新增 refresh() 的方法，在分布式缓存在某些极端情况下出现不同步的时候进行刷新。
+新增：对 Columns 优化，新增 gourpIf()/stringIf()/isNullIf() 等方法
+新增：新增 PrimaryKeyValueGenerator 对 Model 的主键值生成策略配置
+新增：新增 JbootModelFilter 对 Model 的过滤器策略配置，可以用于在 save 或者 update 的时候防止 Model 存在 xss 等问题
+优化：对 MQ 进行优化，当不配置的时候可能返回一个错误的 MQ 对象的问题
+优化：升级 JFinal-Wexin、Fastjson、Fastxml 等依赖到最新版本
+优化：JbootDirectiveBase 当传入空值的时候明确返回 null
+修复：当 Columns 查询的时候，使用 group 会出现 value 内容缺失的问题
+
+
+
+jboot v3.0.2:
+新增：StrUtil 新增 splitToSetByComma() 方法
+新增：StrUtil 新增 escapeModel() 和 escapeMap() 方法
+优化：StrUti.isDecimal() 方法，防止在某些极端情况下出现判断不正确的问题
+优化：对 pom.xml 进行优化，排除非必要的依赖
+优化：重构 Sentinel 模块，修改为非必须依赖
+
+
+
+jboot v3.0.1:
+修复：紧急修复 v3.0.0 必须依赖 nacos-client 的问题
+
+
+
+jboot v3.0.0:
+新增：对分布式配置中心 apollo 的支持
+新增：对分布式配置中心 nacos 的支持
+新增：JbootController 新增 getTrimPara() 和 getCurrentUrl() 方法
+新增：Sql Join 系列支持 AS 的写法
+新增：ClassUtil 工具类新增 getGenericClass() 方法获取泛型类型
+优化：ClassScanner 对扫描模块的准确排除
+修复：ModelCopier 在 Copy 的时候返回旧的 List 或者 Set 的问题
+
+
+
+jboot v3.0.0-rc.2:
+新增：添加 Join 的 sql 查询操作
+新增：新增 Columns 的 string() 方法，方便自由添加相应的 sql
+优化：完善对 Sentinel 的相关测试
+优化：重命名 IJbootModelDialect 为 JbootDialect
+优化：重命名 Columns 的相关方法：not_in() 为 notIn() 、 is_null() 为 isNull() 、 is_not_null() 为 isNotNull()
+优化：重命名 DialectKit 为 SqlBuilder
+优化：升级Jboot的相关依赖
+    - sharding-jdbc:4.0.0
+    - metrics:4.1.2
+    - guava:28.2
+    - HikariCP:3.4.2
+
+
+
+jboot v3.0.0-rc.1:
+新增：Columns 查询新增 group 以及 notBetween 的功能
+新增：新增对 sentinel 分布式限流、降级的初步支持
+升级：升级 alibaba Dubbo 到 Apache Dubbo
+升级：升级 Sharding-JDBC 到 Apache ShardingsSphere 4.0 最新版
+升级：升级 Seata 分布式事务到 1.0 正式版
+优化：优化通过 Columns 查询时对 SQL 生成的性能
+移除：移除对 Zbus MQ 以及 Zbus RPC 的支持

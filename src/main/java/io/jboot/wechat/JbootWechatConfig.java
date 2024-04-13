@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package io.jboot.wechat;
 
 
 import com.jfinal.weixin.sdk.api.ApiConfig;
-import io.jboot.config.annotation.PropertyConfig;
-import io.jboot.utils.StringUtils;
+import io.jboot.app.config.annotation.ConfigModel;
+import io.jboot.utils.StrUtil;
 
-@PropertyConfig(prefix = "jboot.wechat")
+@ConfigModel(prefix = "jboot.wechat")
 public class JbootWechatConfig {
 
     private String debug = "false";
@@ -93,9 +93,9 @@ public class JbootWechatConfig {
     }
 
     public boolean isConfigOk() {
-        return StringUtils.isNotBlank(appId)
-                && StringUtils.isNotBlank(appSecret)
-                && StringUtils.isNotBlank(token);
+        return StrUtil.isNotBlank(appId)
+                && StrUtil.isNotBlank(appSecret)
+                && StrUtil.isNotBlank(token);
     }
 
     public ApiConfig getApiConfig() {

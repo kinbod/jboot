@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 public @interface Bean {
     String name() default "";
 }

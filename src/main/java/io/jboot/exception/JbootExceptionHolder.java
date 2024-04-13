@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package io.jboot.exception;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -23,26 +23,36 @@ import java.util.List;
  */
 public class JbootExceptionHolder {
 
-    static ThreadLocal<List<Throwable>> throwables = new ThreadLocal<>();
-
-    public static void init() {
-        throwables.set(new ArrayList<>());
-    }
+    static ThreadLocal<List<Throwable>> throwables = ThreadLocal.withInitial(() -> new LinkedList<>());
+    static ThreadLocal<List<String>> messages = ThreadLocal.withInitial(() -> new LinkedList<>());
 
     public static void release() {
-        throwables.get().clear();
-        throwables.remove();
-    }
-
-    public static void hold(Throwable ex) {
-        List<Throwable> list = throwables.get();
-        if (list != null) {
-            list.add(ex);
+        if (!throwables.get().isEmpty()){
+            throwables.get().clear();
+        }
+        if (!messages.get().isEmpty()){
+            messages.get().clear();
         }
     }
 
-    public static List<Throwable> throwables() {
+    public static void hold(Throwable ex) {
+        throwables.get().add(ex);
+    }
+    public static void hold(String message,Throwable ex) {
+        if (message != null) {
+            messages.get().add(message);
+        }
+        if (ex != null) {
+            throwables.get().add(ex);
+        }
+    }
+
+    public static List<Throwable> getThrowables() {
         return throwables.get();
+    }
+
+    public static List<String> getMessages() {
+        return messages.get();
     }
 
 

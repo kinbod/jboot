@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,60 +16,33 @@
 package io.jboot.web.handler;
 
 import com.jfinal.handler.Handler;
-import com.netflix.hystrix.strategy.concurrency.HystrixRequestContext;
-import io.jboot.JbootConstants;
+import io.jboot.JbootConsts;
 import io.jboot.exception.JbootExceptionHolder;
-import io.jboot.web.JbootRequestContext;
 import io.jboot.web.session.JbootServletRequestWrapper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-
+/**
+ * 用于对 request 封装 和 CPATH 的设置
+ */
 public class JbootHandler extends Handler {
 
 
     @Override
     public void handle(String target, HttpServletRequest request, HttpServletResponse response, boolean[] isHandled) {
-
-        /**
-         * 通过 JbootRequestContext 去保存 request，然后可以在当前线程的任何地方
-         * 通过 JbootRequestContext.getRequest() 去获取。
-         */
-        JbootServletRequestWrapper jbootServletRequest = new JbootServletRequestWrapper(request, response);
-        JbootRequestContext.handle(jbootServletRequest, response);
-
-
-        /**
-         * 初始化 当前线程的 Hystrix
-         */
-        HystrixRequestContext context = HystrixRequestContext.initializeContext();
-
-        /**
-         * 初始化 异常记录器，用于记录异常信息，然后在页面输出
-         */
-        JbootExceptionHolder.init();
-
-
+        JbootServletRequestWrapper requestWrapper = new JbootServletRequestWrapper(request, response);
         try {
-            /**
-             * 执行请求逻辑
-             */
-            doHandle(target, jbootServletRequest, response, isHandled);
-
+            doHandle(target, requestWrapper, response, isHandled);
         } finally {
             JbootExceptionHolder.release();
-            context.shutdown();
-            JbootRequestContext.release();
-
-            jbootServletRequest.refreshSession();
+            requestWrapper.refreshSession();
         }
-
     }
 
+
     private void doHandle(String target, HttpServletRequest request, HttpServletResponse response, boolean[] isHandled) {
-        request.setAttribute(JbootConstants.ATTR_REQUEST, request);
-        request.setAttribute(JbootConstants.ATTR_CONTEXT_PATH, request.getContextPath());
+        request.setAttribute(JbootConsts.ATTR_CONTEXT_PATH, request.getContextPath());
         next.handle(target, request, response, isHandled);
     }
 

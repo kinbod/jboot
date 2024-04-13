@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2016, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 package io.jboot.web.render;
 
 import com.jfinal.render.ContentType;
+import com.jfinal.render.ErrorRender;
 import com.jfinal.render.Render;
 import com.jfinal.render.RenderFactory;
+import com.jfinal.template.TemplateException;
+import io.jboot.components.valid.ValidErrorRender;
+import io.jboot.components.valid.ValidException;
 
 public class JbootRenderFactory extends RenderFactory {
 
@@ -60,7 +64,7 @@ public class JbootRenderFactory extends RenderFactory {
 
     @Override
     public Render getErrorRender(int errorCode) {
-        return new JbootErrorRender(errorCode, constants.getErrorView(errorCode));
+        return new JbootErrorRender(errorCode, ErrorRender.getErrorView(errorCode));
     }
 
     @Override
@@ -102,5 +106,44 @@ public class JbootRenderFactory extends RenderFactory {
     public Render getXmlRender(String view) {
         return new JbootXmlRender(view);
     }
+
+
+    @Override
+    public Render getRedirectRender(String url) {
+        return new JbootRedirectRender(url);
+    }
+
+    @Override
+    public Render getRedirectRender(String url, boolean withQueryString) {
+        return new JbootRedirectRender(url, withQueryString);
+    }
+
+    @Override
+    public Render getRedirect301Render(String url) {
+        return new JbootRedirect301Render(url);
+    }
+
+    @Override
+    public Render getRedirect301Render(String url, boolean withQueryString) {
+        return new JbootRedirect301Render(url, withQueryString);
+    }
+
+    @Override
+    public Render getCaptchaRender() {
+        return new JbootCaptchaRender();
+    }
+
+    public JbootReturnValueRender getReturnValueRender(Object returnValue) {
+        return new JbootReturnValueRender(returnValue);
+    }
+
+    public ValidErrorRender getValidErrorRender(ValidException validException) {
+        return new ValidErrorRender(validException);
+    }
+
+    public TemplateErrorRender getTemplateErrorRender(TemplateException e) {
+        return new TemplateErrorRender(e);
+    }
+
 
 }

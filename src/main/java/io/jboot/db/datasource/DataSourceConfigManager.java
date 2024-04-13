@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,13 @@
  */
 package io.jboot.db.datasource;
 
-import com.google.common.collect.Maps;
-import io.jboot.Jboot;
-import io.jboot.config.JbootConfigManager;
-import io.jboot.utils.StringUtils;
+import io.jboot.utils.ConfigUtil;
+import io.jboot.utils.StrUtil;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataSourceConfigManager {
-
-    private static final String DATASOURCE_PREFIX = "jboot.datasource.";
-
 
     private static DataSourceConfigManager manager = new DataSourceConfigManager();
 
@@ -33,61 +29,38 @@ public class DataSourceConfigManager {
         return manager;
     }
 
-    private Map<String, DataSourceConfig> datasourceConfigs = Maps.newHashMap();
-    private Map<String, DataSourceConfig> shardingDatasourceConfigs = Maps.newHashMap();
+    private Map<String, DataSourceConfig> datasourceConfigs = new HashMap<>();
 
     private DataSourceConfigManager() {
+        Map<String, DataSourceConfig> configMap = ConfigUtil.getConfigModels(DataSourceConfig.class, "jboot.datasource");
+        for (Map.Entry<String, DataSourceConfig> entry : configMap.entrySet()) {
+            DataSourceConfig config = entry.getValue();
 
-        DataSourceConfig datasourceConfig = Jboot.config(DataSourceConfig.class, "jboot.datasource");
-
-        //若未配置数据源的名称，设置为默认
-        if (StringUtils.isBlank(datasourceConfig.getName())) {
-            datasourceConfig.setName(DataSourceConfig.NAME_DEFAULT);
-        }
-
-        if (datasourceConfig.isConfigOk()) {
-            datasourceConfigs.put(datasourceConfig.getName(), datasourceConfig);
-        }
-        
-        if (datasourceConfig.isShardingEnable()) {
-            shardingDatasourceConfigs.put(datasourceConfig.getName(), datasourceConfig);
-        }
-
-
-        Properties prop = JbootConfigManager.me().getProperties();
-        Set<String> datasourceNames = new HashSet<>();
-        for (Map.Entry<Object, Object> entry : prop.entrySet()) {
-            String key = entry.getKey().toString();
-            if (key.startsWith(DATASOURCE_PREFIX) && entry.getValue() != null) {
-                String[] keySplits = key.split("\\.");
-                if (keySplits.length == 4) {
-                    datasourceNames.add(keySplits[2]);
-                }
+            //默认数据源
+            if ("default".equals(entry.getKey()) && StrUtil.isBlank(config.getName())) {
+                config.setName(DataSourceConfig.NAME_DEFAULT);
+            } else if (StrUtil.isBlank(config.getName())) {
+                config.setName(entry.getKey());
             }
+
+            addConfig(config);
+        }
+    }
+
+    public void addConfig(DataSourceConfig config) {
+        if (config == null || !config.isConfigOk()) {
+            return;
         }
 
-
-        for (String name : datasourceNames) {
-            DataSourceConfig dsc = Jboot.config(DataSourceConfig.class, DATASOURCE_PREFIX + name);
-            if (StringUtils.isBlank(dsc.getName())) {
-                dsc.setName(name);
-            }
-            if (dsc.isConfigOk()) {
-                datasourceConfigs.put(name, dsc);
-            }
-            if (dsc.isShardingEnable()) {
-                shardingDatasourceConfigs.put(name, dsc);
-            }
-        }
+        datasourceConfigs.put(config.getName(), config);
     }
 
 
     public Map<String, DataSourceConfig> getDatasourceConfigs() {
-        return datasourceConfigs;
+        return new HashMap<>(datasourceConfigs);
     }
 
-    public Map<String, DataSourceConfig> getShardingDatasourceConfigs() {
-        return shardingDatasourceConfigs;
+    public DataSourceConfig getMainDatasourceConfig() {
+        return datasourceConfigs.get(DataSourceConfig.NAME_DEFAULT);
     }
-
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2016, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import com.jfinal.aop.Invocation;
 import com.jfinal.core.JFinal;
 import com.jfinal.weixin.sdk.api.ApiConfigKit;
 import com.jfinal.weixin.sdk.api.ApiResult;
-import io.jboot.utils.StringUtils;
+import io.jboot.utils.StrUtil;
 import io.jboot.wechat.controller.JbootWechatController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,7 +61,7 @@ public class WechatUserInterceptor implements Interceptor {
             return;
         }
 
-        controller.doNotAlloVisitRedirect();
+        controller.doNotAllowVisitRedirect();
 
     }
 
@@ -115,21 +115,21 @@ public class WechatUserInterceptor implements Interceptor {
 
         // 被拦截前的请求URL
         String toUrl = request.getRequestURI();
-        if (StringUtils.isNotBlank(queryString)) {
+        if (StrUtil.isNotBlank(queryString)) {
             toUrl = toUrl.concat("?").concat(queryString);
         }
 
 
-        String controllerKey = inv.getControllerKey();
+        String controllerKey = inv.getControllerPath();
         String callbackControllerKey = controllerKey + "/wechatCallback";
 
         if (!JFinal.me().getAllActionKeys().contains(callbackControllerKey)) {
             callbackControllerKey = controllerKey.substring(0, controllerKey.lastIndexOf("/")) + "/wechatCallback";
         }
 
-        String redirectUrl = controller.getBaseUrl() + callbackControllerKey + "?goto=" + StringUtils.urlEncode(toUrl);
+        String redirectUrl = controller.getBaseUrl() + callbackControllerKey + "?goto=" + StrUtil.urlEncode(toUrl);
 
-        redirectUrl = StringUtils.urlEncode(redirectUrl);
+        redirectUrl = StrUtil.urlEncode(redirectUrl);
         String authUrl = isFromBaseScope ? AUTHORIZE_URL : BASE_AUTHORIZE_URL;
         String url = authUrl.replace("{redirecturi}", redirectUrl).replace("{appid}", appid.trim());
         controller.redirect(url);
@@ -142,7 +142,7 @@ public class WechatUserInterceptor implements Interceptor {
      * @return
      */
     protected boolean validateUserJson(String wechatUserJson) {
-        return StringUtils.isNotBlank(wechatUserJson)
+        return StrUtil.isNotBlank(wechatUserJson)
                 && wechatUserJson.contains("openid")
                 && wechatUserJson.contains("nickname") //包含昵称
                 && wechatUserJson.contains("headimgurl"); //包含头像

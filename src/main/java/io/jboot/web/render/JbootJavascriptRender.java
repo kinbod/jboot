@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2016, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.jfinal.render.ContentType;
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
- * @Package io.jboot.web.render
  */
 public class JbootJavascriptRender extends JbootTextRender {
     public JbootJavascriptRender(String text) {

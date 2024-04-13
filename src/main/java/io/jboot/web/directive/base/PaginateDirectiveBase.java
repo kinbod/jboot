@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.template.Env;
 import com.jfinal.template.io.Writer;
 import com.jfinal.template.stat.Scope;
-import io.jboot.web.JbootRequestContext;
+import io.jboot.utils.StrUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,121 +27,163 @@ import java.util.List;
 
 public abstract class PaginateDirectiveBase extends JbootDirectiveBase {
 
+    private static final String PREVIOUS_CLASS_KEY = "previousClass";
+    private static final String NEXT_CLASS_KEY = "nextClass";
+    private static final String ACTIVE_CLASS_KEY = "activeClass";
+    private static final String DISABLED_CLASS_KEY = "disabledClass";
+    private static final String ONLY_SHOW_PREVIOUS_AND_NEXT_KEY = "onlyShowPreviousAndNext";
 
-    private String previousClass = "previous";
-    private String nextClass = "next";
-    private String activeClass = "active";
-    private String disabledClass = "disabled";
-    private String anchor = "anchor";
-    private boolean onlyShowPreviousAndNext = false;
+    private static final String PREVIOUS_TEXT_KEY = "previousText";
+    private static final String NEXT_TEXT_KEY = "nextText";
+    private static final String PAGE_ITEMS_NAME_KEY = "pageItemsName";
+    private static final String PAGE_DATA_KEY = "pageData";
+    private static final String SIBLINGS_ITEM_COUNT_KEY = "siblingsItemCount";
+    private static final String START_ITEM_COUNT_KEY = "startItemCount";
+    private static final String END_ITEM_COUNT_KEY = "endItemCount";
+
+
+    private static final String DEFAULT_PREVIOUS_CLASS = "previous";
+    private static final String DEFAULT_NEXT_CLASS = "next";
+    private static final String DEFAULT_ACTIVE_CLASS = "active";
+    private static final String DEFAULT_DISABLED_CLASS = "disabled";
+
+    private static final String DEFAULT_PREVIOUS_TEXT = "上一页";
+    private static final String DEFAULT_NEXT_TEXT = "下一页";
+    private static final String DEFAULT_PAGE_ITEMS_NAME = "pages";
+    private static final String DEFAULT_PAGE_DATA_KEY = "pageData";
+
+    private static final String JAVASCRIPT_TEXT = "javascript:;";
+    private static final String ELLIPSIS_TEXT = "...";
+
+    private static final int SIBLINGS_ITEM_COUNT = 2;
+    private static final int START_ITEM_COUNT = 1;
+    private static final int END_ITEM_COUNT = 1;
+
 
     @Override
     public void onRender(Env env, Scope scope, Writer writer) {
 
-        previousClass = getParam("previousClass", "previous", scope);
-        nextClass = getParam("nextClass", "next", scope);
-        activeClass = getParam("activeClass", "active", scope);
-        disabledClass = getParam("disabledClass", "disabled", scope);
-        anchor = getParam("anchor", null, scope);
-        onlyShowPreviousAndNext = getParam("onlyShowPreviousAndNext", false, scope);
+        String previousClass = getPara(PREVIOUS_CLASS_KEY, scope, DEFAULT_PREVIOUS_CLASS);
+        String nextClass = getPara(NEXT_CLASS_KEY, scope, DEFAULT_NEXT_CLASS);
+        String activeClass = getPara(ACTIVE_CLASS_KEY, scope, DEFAULT_ACTIVE_CLASS);
+        String disabledClass = getPara(DISABLED_CLASS_KEY, scope, DEFAULT_DISABLED_CLASS);
+        boolean onlyShowPreviousAndNext = getParaToBool(ONLY_SHOW_PREVIOUS_AND_NEXT_KEY, scope, false);
 
-        String previousText = getParam("previousText", "上一页", scope);
-        String nextText = getParam("nextText", "下一页", scope);
+        String previousText = getPara(PREVIOUS_TEXT_KEY, scope, DEFAULT_PREVIOUS_TEXT);
+        String nextText = getPara(NEXT_TEXT_KEY, scope, DEFAULT_NEXT_TEXT);
+        String pageItemsName = getPara(PAGE_ITEMS_NAME_KEY, scope, DEFAULT_PAGE_ITEMS_NAME);
 
-        Page<?> page = JbootRequestContext.getRequestAttr(getPageAttrName());
+        String pageDataKey = getPara(PAGE_DATA_KEY, scope, DEFAULT_PAGE_DATA_KEY);
 
-        int currentPage = page.getPageNumber();
-        int totalPage = page.getTotalPage();
+        int siblingsItemCount = getParaToInt(SIBLINGS_ITEM_COUNT_KEY, scope, SIBLINGS_ITEM_COUNT);
+        if (siblingsItemCount < 1) {
+            siblingsItemCount = SIBLINGS_ITEM_COUNT;
+        }
 
-        if ((totalPage <= 0) || (currentPage > totalPage)) {
+
+        int startItemCount = getParaToInt(START_ITEM_COUNT_KEY, scope, START_ITEM_COUNT);
+        if (startItemCount < 1) {
+            startItemCount = START_ITEM_COUNT;
+        }
+
+
+        int endItemCount = getParaToInt(END_ITEM_COUNT_KEY, scope, END_ITEM_COUNT);
+        if (endItemCount < 1) {
+            endItemCount = END_ITEM_COUNT;
+        }
+
+
+        Page<?> page = getPage(env, scope, writer);
+
+        int currentPageNumber = page == null ? 1 : page.getPageNumber();
+        int totalPage = page == null ? 0 : page.getTotalPage();
+
+        if (totalPage == 0) {
             return;
         }
 
-        int startPage = currentPage - 4;
+        if (currentPageNumber > totalPage) {
+            currentPageNumber = totalPage;
+        }
+
+        int startPage = currentPageNumber - siblingsItemCount;
         if (startPage < 1) {
             startPage = 1;
         }
-        int endPage = currentPage + 4;
+
+        int endPage = currentPageNumber + siblingsItemCount;
         if (endPage > totalPage) {
             endPage = totalPage;
         }
 
-        if (currentPage <= 8) {
-            startPage = 1;
-        }
-
-        if ((totalPage - currentPage) < 8) {
-            endPage = totalPage;
-        }
-
         List<PaginateItem> pages = new ArrayList<PaginateItem>();
-        if (currentPage == 1) {
-            pages.add(new PaginateDirectiveBase.PaginateItem(previousClass + " " + disabledClass, "javascript:;", previousText));
+        if (currentPageNumber == 1) {
+            pages.add(new PaginateDirectiveBase.PaginateItem(previousClass + StrUtil.SPACE + disabledClass, JAVASCRIPT_TEXT, previousText));
         } else {
-            pages.add(new PaginateDirectiveBase.PaginateItem(previousClass, getUrl(currentPage - 1), previousText));
-        }
-
-        if (currentPage > 8 && !onlyShowPreviousAndNext) {
-            pages.add(new PaginateDirectiveBase.PaginateItem("", getUrl(1), "1"));
-            pages.add(new PaginateDirectiveBase.PaginateItem("", getUrl(2), "2"));
-            pages.add(new PaginateDirectiveBase.PaginateItem(disabledClass, "javascript:;", "..."));
+            pages.add(new PaginateDirectiveBase.PaginateItem(previousClass, getUrl(currentPageNumber - 1, env, scope, writer), previousText));
         }
 
         if (!onlyShowPreviousAndNext) {
-            for (int i = startPage; i <= endPage; i++) {
-                if (currentPage == i) {
-                    pages.add(new PaginateDirectiveBase.PaginateItem(activeClass, "javascript:;", i));
-                } else {
-                    pages.add(new PaginateDirectiveBase.PaginateItem("", getUrl(i), i));
+
+            //开始页码
+            for (int i = 1; i <= startItemCount; i++) {
+                if (i < currentPageNumber - siblingsItemCount) {
+                    pages.add(new PaginateDirectiveBase.PaginateItem(StrUtil.EMPTY, getUrl(i, env, scope, writer), i));
                 }
+            }
+
+            //省略号
+            if (currentPageNumber > startItemCount + siblingsItemCount + 1) {
+                pages.add(new PaginateDirectiveBase.PaginateItem(disabledClass, JAVASCRIPT_TEXT, ELLIPSIS_TEXT));
+            }
+
+
+            //中间页码
+            for (int i = startPage; i <= endPage; i++) {
+                if (currentPageNumber == i) {
+                    pages.add(new PaginateDirectiveBase.PaginateItem(activeClass, JAVASCRIPT_TEXT, i));
+                } else {
+                    pages.add(new PaginateDirectiveBase.PaginateItem(StrUtil.EMPTY, getUrl(i, env, scope, writer), i));
+                }
+            }
+
+
+            //省略号
+            if (currentPageNumber < totalPage - siblingsItemCount - endItemCount) {
+                pages.add(new PaginateDirectiveBase.PaginateItem(disabledClass, JAVASCRIPT_TEXT, ELLIPSIS_TEXT));
+            }
+
+            //后边页码
+            for (int i = (endItemCount - 1); i >= 0; i--) {
+                if (i < totalPage - (currentPageNumber + siblingsItemCount)) {
+                    pages.add(new PaginateDirectiveBase.PaginateItem(StrUtil.EMPTY, getUrl(totalPage - i, env, scope, writer), totalPage - i));
+                }
+
             }
         }
 
-        if ((totalPage - currentPage) >= 8 && !onlyShowPreviousAndNext) {
-            pages.add(new PaginateDirectiveBase.PaginateItem(disabledClass, "javascript:;", "..."));
-            pages.add(new PaginateDirectiveBase.PaginateItem("", getUrl(totalPage - 1), totalPage - 1));
-            pages.add(new PaginateDirectiveBase.PaginateItem("", getUrl(totalPage), totalPage));
-        }
 
-        if (currentPage == totalPage) {
-            pages.add(new PaginateDirectiveBase.PaginateItem(nextClass + " " + disabledClass, "javascript:;", nextText));
+        if (currentPageNumber == totalPage) {
+            pages.add(new PaginateDirectiveBase.PaginateItem(nextClass + StrUtil.SPACE + disabledClass, JAVASCRIPT_TEXT, nextText));
         } else {
-            pages.add(new PaginateDirectiveBase.PaginateItem(nextClass, getUrl(currentPage + 1), nextText));
+            pages.add(new PaginateDirectiveBase.PaginateItem(nextClass, getUrl(currentPageNumber + 1, env, scope, writer), nextText));
         }
 
-        scope.setLocal(getPageItemsName(), pages);
+        scope.setLocal(pageItemsName, pages);
+        scope.setLocal(pageDataKey, page);
 
         renderBody(env, scope, writer);
     }
 
 
-    public String getPrevious() {
-        return previousClass;
-    }
+    protected abstract String getUrl(int pageNumber, Env env, Scope scope, Writer writer);
 
-    public String getNext() {
-        return nextClass;
-    }
+    protected abstract Page<?> getPage(Env env, Scope scope, Writer writer);
 
-    public String getDisabled() {
-        return disabledClass;
-    }
 
-    public String getAnchor() {
-        return anchor;
-    }
-
-    protected abstract String getUrl(int pageNumber);
-
-    /**
-     * 获取 page 设置到 requestAttr 里的名字
-     *
-     * @return
-     */
-    protected abstract String getPageAttrName();
-
-    protected String getPageItemsName() {
-        return "pages";
+    @Override
+    public boolean hasEnd() {
+        return true;
     }
 
 
@@ -150,16 +192,10 @@ public abstract class PaginateDirectiveBase extends JbootDirectiveBase {
         private String url;
         private String text;
 
-        public PaginateItem(String style, String url, String text) {
+        public PaginateItem(String style, String url, Object text) {
             this.style = style;
             this.url = url;
-            this.text = text;
-        }
-
-        public PaginateItem(String style, String url, int text) {
-            this.style = style;
-            this.url = url;
-            this.text = text + "";
+            this.text = String.valueOf(text);
         }
 
         public String getStyle() {
@@ -185,10 +221,5 @@ public abstract class PaginateDirectiveBase extends JbootDirectiveBase {
         public void setText(String text) {
             this.text = text;
         }
-    }
-
-    @Override
-    public boolean hasEnd() {
-        return true;
     }
 }

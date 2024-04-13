@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package io.jboot.aop.jfinal;
 
+import com.jfinal.aop.Aop;
 import com.jfinal.config.Plugins;
 import com.jfinal.plugin.IPlugin;
-import io.jboot.Jboot;
+
+import java.util.List;
 
 /**
- * Jfinal Plugins 的代理类，方便为Plugin插件的自动注入功能
+ * Jfinal Plugins 的代理类，方便为 Plugin 插件的自动注入功能
  */
 public class JfinalPlugins {
 
@@ -31,8 +33,16 @@ public class JfinalPlugins {
     }
 
     public JfinalPlugins add(IPlugin plugin) {
-        Jboot.injectMembers(plugin);
+        Aop.inject(plugin);
         plugins.add(plugin);
         return this;
+    }
+
+    public Plugins getPlugins() {
+        return plugins;
+    }
+
+    public List<IPlugin> getPluginList() {
+        return plugins.getPluginList();
     }
 }

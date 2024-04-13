@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,27 @@
 package io.jboot.db;
 
 import com.jfinal.plugin.activerecord.Model;
-import io.shardingjdbc.core.api.config.strategy.ShardingStrategyConfiguration;
+import io.jboot.db.datasource.DataSourceConfig;
+import io.jboot.utils.StrUtil;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
- * @Package io.jboot.db
  */
 public class TableInfo {
 
     private String tableName;
     private String primaryKey;
     private Class<? extends Model> modelClass;
-    private Class<? extends ShardingStrategyConfiguration> databaseShardingStrategyConfig;
-    private Class<? extends ShardingStrategyConfiguration> tableShardingStrategyConfig;
-    private String actualDataNodes;
-    private String keyGeneratorColumnName;
-    private String keyGeneratorClass;
-    private Set<String> datasources;
+    private String datasource;
+    private Set<String> datasourceNames;
+
+    private List<DataSourceConfigWrapper> attachedDatasources;
 
 
     public String getTableName() {
@@ -62,52 +63,70 @@ public class TableInfo {
         this.modelClass = modelClass;
     }
 
-    public Class<? extends ShardingStrategyConfiguration> getDatabaseShardingStrategyConfig() {
-        return databaseShardingStrategyConfig;
+    public String getDatasource() {
+        return datasource;
     }
 
-    public void setDatabaseShardingStrategyConfig(Class<? extends ShardingStrategyConfiguration> databaseShardingStrategyConfig) {
-        this.databaseShardingStrategyConfig = databaseShardingStrategyConfig;
+    public void setDatasource(String datasource) {
+        this.datasource = datasource;
     }
 
-    public Class<? extends ShardingStrategyConfiguration> getTableShardingStrategyConfig() {
-        return tableShardingStrategyConfig;
+    public Set<String> getDatasourceNames() {
+        if (datasourceNames == null) {
+            datasourceNames = StrUtil.isNotBlank(datasource)
+                    ? StrUtil.splitToSetByComma(datasource)
+                    : new HashSet<>();
+        }
+        return datasourceNames;
     }
 
-    public void setTableShardingStrategyConfig(Class<? extends ShardingStrategyConfiguration> tableShardingStrategyConfig) {
-        this.tableShardingStrategyConfig = tableShardingStrategyConfig;
+
+    /**
+     * 添加数据源：让此表绑定数据源
+     *
+     * @param dataSourceConfig
+     * @param fromDesignated   是否是通过 jboot.datasource.table 或者 @table(datasource="xxx") 来指定的
+     */
+    public boolean addAttachedDatasource(DataSourceConfig dataSourceConfig, boolean fromDesignated) {
+        if (this.attachedDatasources == null) {
+            this.attachedDatasources = new ArrayList<>();
+        }
+
+        // 只能添加到一个数据源，若 fromDesignated == false 的时候，直接返回
+        if (!fromDesignated && !this.attachedDatasources.isEmpty()) {
+            return false;
+        }
+
+
+        // 若新添加的数据源，是配置了指定的表（亦或者表配置了指定的数据源），
+        // 那么需要移除那些未指定表的默认数据源
+        if (fromDesignated && !this.attachedDatasources.isEmpty()) {
+            for (DataSourceConfigWrapper dataSourceConfigWrapper : attachedDatasources) {
+                if (!dataSourceConfigWrapper.fromDesignated) {
+                    dataSourceConfigWrapper.dataSourceConfig.removeTableInfo(this);
+                }
+            }
+            attachedDatasources.removeIf(dataSourceConfigWrapper -> !dataSourceConfigWrapper.fromDesignated);
+        }
+
+
+        // 一张表只能绑定一个数据源，jfinal 的 TableMapping 决定的，默认情况下使用该数据源去进行增删改查
+        if (attachedDatasources.isEmpty()) {
+            this.attachedDatasources.add(new DataSourceConfigWrapper(dataSourceConfig, fromDesignated));
+        }
+
+        return true;
     }
 
-    public String getActualDataNodes() {
-        return actualDataNodes;
-    }
 
-    public void setActualDataNodes(String actualDataNodes) {
-        this.actualDataNodes = actualDataNodes;
-    }
+    public static class DataSourceConfigWrapper {
+        private final DataSourceConfig dataSourceConfig;
+        private final boolean fromDesignated;
 
-    public String getKeyGeneratorColumnName() {
-        return keyGeneratorColumnName;
-    }
-
-    public void setKeyGeneratorColumnName(String keyGeneratorColumnName) {
-        this.keyGeneratorColumnName = keyGeneratorColumnName;
-    }
-
-    public String getKeyGeneratorClass() {
-        return keyGeneratorClass;
-    }
-
-    public void setKeyGeneratorClass(String keyGeneratorClass) {
-        this.keyGeneratorClass = keyGeneratorClass;
-    }
-
-    public Set<String> getDatasources() {
-        return datasources;
-    }
-
-    public void setDatasources(Set<String> datasources) {
-        this.datasources = datasources;
+        public DataSourceConfigWrapper(DataSourceConfig dataSourceConfig, boolean fromDesignated) {
+            this.dataSourceConfig = dataSourceConfig;
+            this.fromDesignated = fromDesignated;
+        }
     }
 
 }

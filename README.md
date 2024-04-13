@@ -1,110 +1,72 @@
-## website
+![](./doc/docs/static/images/jboot-logo.png)
 
-http://jboot.io
+Jboot 是一个基于 JFinal、Dubbo、Seata、Sentinel、ShardingSphere、Nacos 等开发的国产框架。
 
-## [中文文档](./README-ZH.md)
-## what is JBoot 
+其特点是：
 
-Jboot，she is born for distributed project and micro service.
+- 1、基于 JFinal 完整的 MVC + ORM 支持。
+- 2、支持多数据源、分库分表和分布式事务。
+- 3、支持 Dubbo RPC 的完整功能，有超过 1亿+ 用户产品正在使用。
+- 4、完整的单点限流和分布式限流功能
+- 5、支持基基于 Apollo 和 Nacos 的分布式配置中心
+- 6、完整的分布式缓存、分布式session、分布式附件支持
+- 7、内置功能强劲的门户网关
+- 8、完整的单元测试支持
+- 9、完善代码生成工具 和 API 文档生成工具
+- 10、Docker、K8S 友好
 
-QQ-Group： 601440615
 
-Jboot Demos ： https://gitee.com/fuhai/jboot/tree/master/src/test/java
+## 开始
 
-## Jboot maven dependency
+**maven 依赖**
 
 ```xml
 <dependency>
     <groupId>io.jboot</groupId>
     <artifactId>jboot</artifactId>
-    <version>1.6.3</version>
+    <version>4.1.5</version>
 </dependency>
-
 ```
 
-## Jboot core component
+**Hello World**
 
-* [x] MVC （base on JFinal）
-* [x] ORM （base on JFinal）
-* [x] AOP （base on Guice）
-* security control
-    * [x] shiro
-    * [x] jwt
-* RPC (Remote Procedure Call) 
-    * [x] motan
-    * [x] dubbo
-    * [ ] grpc
-    * [x] zbus
-* MQ 
-    * [x] rabbitmq
-    * [x] redismq
-    * [x] Aliyun MQ
-    * [ ] activemq
-    * [x] zbus
-* cache
-    * [x] ehcache
-    * [x] redis
-    * [x] ehredis (tow level distributed cache)
-    * [x] J2Cache ([https://gitee.com/ld/J2Cache](https://gitee.com/ld/J2Cache))
-* [x] distributed session
-* [x] distributed lock
-* task schedule
-    * [x] cron4j
-    * [x] ScheduledThreadPoolExecutor
-    * [x] distributed task schedule (base on redis)
-* [x] component procedure monitor (base on metrics)
-* [x] Hystrix control
-* [x] Opentracing
-    * [x] zipkin
-    * [x] skywalking
-* [x] distributed config center
-* [x] swagger api
-* [x] HttpClient
-    * [x] httpUrlConnection
-    * [x] okHttp
-    * [ ] httpClient
-* [x] wechat api
-* [x] serialization component 
-* [x] event mechanism
-* [x] code generator
+```java
+@RequestMapping("/")
+public class Helloworld extends JbootController {
+
+    public void index(){
+        renderText("hello world");
+    }
+
+    public static void main(String[] args){
+        JbootApplication.run(args);
+    }
+}
+```
 
 
-## document
+## 帮助文档
 
-document url ： [click here](./DOC.md)
+- 文档请访问：[www.jboot.com.cn](http://www.jboot.com.cn)
+- Demos 请访问：[这里](./src/test/java/io/jboot/test)
 
-#### document directories 
+## 广告
 
-- [JBoot core component](./DOC.md#jboot核心组件)
-- [MVC](./DOC.md#mvc)
-- [security control](./DOC.md#安全控制)
-- [ORM](./DOC.md#orm)
-- [AOP](./DOC.md#aop)
-- [RPC](./DOC.md#rpc远程调用)
-- [MQ](./DOC.md#mq消息队列)
-- [Cache](./DOC.md#cache缓存)
-- [http Client](./DOC.md#http客户端)
-- [metrics monitor](./DOC.md#metrics数据监控)
-- [Hystrix control](./DOC.md#容错与隔离)
-- [Opentracing](./DOC.md#opentracing数据追踪)	
-- [distributed config center](./DOC.md#统一配置中心)	
-- [Swagger api](./DOC.md#swagger-api自动生成)
-- Other
-	- [SPI](./DOC.md#spi扩展)
-	- [JbootEvnet](./DOC.md#jbootEvnet事件机制)
-	- [properties reader](./DOC.md#配置文件)
-	- [code generator](./DOC.md#代码生成器)
-- [project build](./DOC.md#项目构建)
-- [contact author](./DOC.md#联系作者)
-- [FAQ](./DOC.md#常见问题)
+- 一个好用的在线代码格式化工具：[http://www.CodeFormat.CN](http://www.codeformat.cn)
+
+## 微信交流群
+
+![](./doc/docs/static/images/jboot-wechat-group.png)
 
 
-## Contributors
-* Michael Yang（EMAIL:fuhai999@gmail.com，GITHUB:[@yangfuhai](https://github.com/yangfuhai))
-* Rlax（EMAIL:popkids@qq.com，GITHUB:[@pkanyue](https://github.com/pkanyue))
-* 徐海峰（EMAIL:xhf6731202@126.com，GITHUB:[@xhf6731202](https://github.com/xhf6731202)）
-* 周洛熙 (EMAIL:78793093@qq.com，GITHUB:[@zhoufengjob](https://github.com/zhoufengjob))
-* lsup (EMAIL:egox.vip@gmail.com，GITHUB:[@lsup](https://github.com/lsup))
+## JbootAdmin 
 
+JbootAdmin 是 Jboot 官方推出的、收费的、企业级快速开发框架，真诚的为各位开发者提供一站式、保姆式的开发服务。
+关于 JbootAdmin 的更多的功能请咨询海哥（微信：wx198819880），或请访问以下网址：
+
+[http://jboot.io/jbootadmin/feature.html](http://jboot.io/jbootadmin/feature.html)
+
+
+![](./doc/jbootadmin/images/jbootadmin-demo.jpg)
 
 

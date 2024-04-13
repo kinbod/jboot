@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.sql.SQLException;
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
- * @Package io.jboot.db.datasource
  */
 public class DruidDataSourceFactory implements DataSourceFactory {
 
@@ -40,7 +39,14 @@ public class DruidDataSourceFactory implements DataSourceFactory {
         druidDataSource.setPassword(config.getPassword());
         druidDataSource.setDriverClassName(config.getDriverClassName());
         druidDataSource.setMaxActive(config.getMaximumPoolSize());
-
+        druidDataSource.setMaxWait(config.getMaxWait());
+        druidDataSource.setTimeBetweenEvictionRunsMillis(config.getTimeBetweenEvictionRunsMillis());
+        druidDataSource.setMinEvictableIdleTimeMillis(config.getMinEvictableIdleTimeMillis());
+        druidDataSource.setTimeBetweenConnectErrorMillis(config.getTimeBetweenConnectErrorMillis());
+        druidDataSource.setValidationQuery(config.getValidationQuery());
+        druidDataSource.setTestWhileIdle(config.isTestWhileIdle());
+        druidDataSource.setTestOnBorrow(config.isTestOnBorrow());
+        druidDataSource.setTestOnReturn(config.isTestOnReturn());
         if (config.getMinimumIdle() != null) {
             druidDataSource.setMinIdle(config.getMinimumIdle());
         }

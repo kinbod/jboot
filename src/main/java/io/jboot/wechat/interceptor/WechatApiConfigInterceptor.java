@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2016, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,9 @@ public class WechatApiConfigInterceptor implements Interceptor {
             ApiConfig config = controller.getApiConfig();
 
             if (config == null) {
-                inv.getController().renderText("error : cannot get apiconfig,please config jboot.properties");
+                inv.getController().renderText("Error: Can not get apiconfig, please config jboot.properties");
                 return;
             }
-
             ApiConfigKit.setThreadLocalAppId(config.getAppId());
             inv.invoke();
         } finally {

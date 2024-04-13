@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2016, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package io.jboot.web.render;
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
- * @Package io.jboot.web.render
  */
-public class JbootXmlRender extends JbootRender {
+public class JbootXmlRender extends JbootTemplateRender {
 
     private static final String contentType = "text/xml; charset=" + getEncoding();
 
@@ -28,6 +27,7 @@ public class JbootXmlRender extends JbootRender {
         super(view);
     }
 
+    @Override
     public String getContentType() {
         return contentType;
     }

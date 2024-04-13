@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,14 @@
  */
 package io.jboot.core.spi;
 
+import io.jboot.utils.AnnotationUtil;
+import io.jboot.utils.ClassScanner;
+import io.jboot.utils.ClassUtil;
+import io.jboot.utils.StrUtil;
+
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 /**
@@ -28,6 +35,8 @@ import java.util.ServiceLoader;
  * 第三步：给jboot.properties配置上类型，jboot.rpc.type = myrpc
  * <p>
  * 通过这三步，就可以扩展自己的Jbootrpc实现
+ *
+ * @author michael yang
  */
 public class JbootSpiLoader {
 
@@ -40,22 +49,92 @@ public class JbootSpiLoader {
      * @param <T>
      * @return
      */
-    public static <T> T load(Class<T> clazz, String spiName) {
-        ServiceLoader<T> serviceLoader = ServiceLoader.load(clazz);
-        Iterator<T> iterator = serviceLoader.iterator();
-        while (iterator.hasNext()) {
-            T t = iterator.next();
-            if (spiName == null) {
-                return t;
+    public static <T> T load(Class<T> clazz, String spiName, Object... paras) {
+        List<Class<T>> classes = ClassScanner.scanSubClass(clazz, true);
+        if (classes.isEmpty()) {
+            return null;
+        }
+
+        for (Class<T> c : classes) {
+            JbootSpi spiConfig = c.getAnnotation(JbootSpi.class);
+            if (spiConfig != null && spiName.equals(AnnotationUtil.get(spiConfig.value()))) {
+                return ClassUtil.newInstance(c, paras);
             }
-            JbootSpi spi = t.getClass().getAnnotation(JbootSpi.class);
-            if (spi == null) {
-                continue;
-            }
-            if (spiName.equals(spi.value())) {
-                return t;
+            //support config class name
+            else if (spiName.equals(c.getName())) {
+                return ClassUtil.newInstance(c, paras);
             }
         }
+
+        return null;
+    }
+
+    /**
+     * 通过 SPI 去加载相应的扩展子类
+     *
+     * @param clazz
+     * @param spiName
+     * @param <T>
+     * @return
+     */
+    public static <T> T load(Class<T> clazz, String spiName) {
+        T returnObject = loadByServiceLoader(clazz, spiName);
+        if (returnObject != null) {
+            return returnObject;
+        }
+
+        if (StrUtil.isBlank(spiName)) {
+            return null;
+        }
+
+        List<Class<T>> classes = ClassScanner.scanSubClass(clazz, true);
+        if (classes.isEmpty()) {
+            return null;
+        }
+
+        for (Class<T> c : classes) {
+            JbootSpi spiConfig = c.getAnnotation(JbootSpi.class);
+            if (spiConfig != null && Objects.equals(spiName, AnnotationUtil.get(spiConfig.value()))) {
+                return ClassUtil.newInstance(c);
+            }
+            //support config class name
+            else if (Objects.equals(spiName, c.getName())) {
+                return ClassUtil.newInstance(c);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 通过 ServiceLoader 加载
+     *
+     * @param clazz
+     * @param spiName
+     * @param <T>
+     * @return
+     */
+    public static <T> T loadByServiceLoader(Class<T> clazz, String spiName) {
+        ServiceLoader<T> serviceLoader = ServiceLoader.load(clazz);
+        Iterator<T> iterator = serviceLoader.iterator();
+
+        while (iterator.hasNext()) {
+            T returnObject = iterator.next();
+
+            if (spiName == null) {
+                return returnObject;
+            }
+
+            JbootSpi spiConfig = returnObject.getClass().getAnnotation(JbootSpi.class);
+            if (spiConfig == null) {
+                continue;
+            }
+
+            if (spiName.equals(AnnotationUtil.get(spiConfig.value()))) {
+                return returnObject;
+            }
+        }
+
         return null;
     }
 }

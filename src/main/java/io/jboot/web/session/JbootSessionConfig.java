@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  */
 package io.jboot.web.session;
 
-import io.jboot.Jboot;
-import io.jboot.config.annotation.PropertyConfig;
-import io.jboot.core.cache.JbootCacheConfig;
+import io.jboot.app.config.annotation.ConfigModel;
 
-@PropertyConfig(prefix = "jboot.web.session")
+@ConfigModel(prefix = "jboot.web.session")
 public class JbootSessionConfig {
 
     public final static int DEFAULT_MAX_INACTIVE_INTERVAL = 60 * 60;
@@ -36,7 +34,8 @@ public class JbootSessionConfig {
     private int cookieMaxAge = DEFAULT_COOKIE_MAX_AGE;
 
     private String cacheName = DEFAULT_SESSION_CACHE_NAME;
-    private String cacheType = Jboot.config(JbootCacheConfig.class).getType();
+    private String useCacheName = "default";
+
 
     public String getCookieName() {
         return cookieName;
@@ -86,12 +85,12 @@ public class JbootSessionConfig {
         this.cacheName = cacheName;
     }
 
-    public String getCacheType() {
-        return cacheType;
+    public String getUseCacheName() {
+        return useCacheName;
     }
 
-    public void setCacheType(String cacheType) {
-        this.cacheType = cacheType;
+    public void setUseCacheName(String useCacheName) {
+        this.useCacheName = useCacheName;
     }
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,306 +16,55 @@
 package io.jboot;
 
 import com.codahale.metrics.MetricRegistry;
-import com.jfinal.kit.PathKit;
-import io.jboot.aop.JbootInjectManager;
-import io.jboot.component.hystrix.JbootHystrixCommand;
-import io.jboot.component.metric.JbootMetricManager;
-import io.jboot.component.redis.JbootRedis;
-import io.jboot.component.redis.JbootRedisManager;
-import io.jboot.config.JbootConfigManager;
-import io.jboot.core.cache.JbootCache;
-import io.jboot.core.cache.JbootCacheManager;
-import io.jboot.core.http.JbootHttp;
-import io.jboot.core.http.JbootHttpManager;
-import io.jboot.core.http.JbootHttpRequest;
-import io.jboot.core.http.JbootHttpResponse;
-import io.jboot.core.mq.Jbootmq;
-import io.jboot.core.mq.JbootmqManager;
-import io.jboot.core.rpc.Jbootrpc;
-import io.jboot.core.rpc.JbootrpcConfig;
-import io.jboot.core.rpc.JbootrpcManager;
-import io.jboot.core.rpc.JbootrpcServiceConfig;
-import io.jboot.core.serializer.ISerializer;
-import io.jboot.core.serializer.SerializerManager;
-import io.jboot.event.JbootEvent;
-import io.jboot.event.JbootEventManager;
-import io.jboot.server.warmboot.AutoDeployManager;
-import io.jboot.server.JbootServer;
-import io.jboot.server.JbootServerConfig;
-import io.jboot.server.JbootServerFactory;
-import io.jboot.server.listener.JbootAppListenerManager;
-import io.jboot.utils.FileUtils;
-import io.jboot.utils.StringUtils;
-import io.jboot.web.JbootWebConfig;
+import com.jfinal.aop.Aop;
+import io.jboot.aop.JbootAopFactory;
+import io.jboot.app.config.JbootConfigManager;
+import io.jboot.components.cache.JbootCache;
+import io.jboot.components.cache.JbootCacheManager;
+import io.jboot.components.event.JbootEvent;
+import io.jboot.components.event.JbootEventManager;
+import io.jboot.components.mq.Jbootmq;
+import io.jboot.components.mq.JbootmqManager;
+import io.jboot.components.rpc.JbootrpcManager;
+import io.jboot.components.rpc.JbootrpcReferenceConfig;
+import io.jboot.components.serializer.JbootSerializer;
+import io.jboot.components.serializer.JbootSerializerManager;
+import io.jboot.support.metric.JbootMetricManager;
+import io.jboot.support.redis.JbootRedis;
+import io.jboot.support.redis.JbootRedisManager;
+import io.jboot.utils.StrUtil;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 
-/**
- * JBOOT 启动类，项目入口
- */
 public class Jboot {
-
-
-    private static Map<String, String> argMap;
-
-
-    private JbootConfig jbootConfig;
-    private Boolean devMode;
-    private Jbootrpc jbootrpc;
-    private JbootCache jbootCache;
-    private JbootHttp jbootHttp;
-    private JbootRedis jbootRedis;
-    private JbootServer jbootServer;
-
-
-    private static Jboot jboot = new Jboot();
-
-    public static Jboot me() {
-        return jboot;
-    }
-
-    /**
-     * main 入口方法
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-        run(args);
-    }
-
-
-    public static void run(String[] args) {
-        parseArgs(args);
-        jboot.start();
-    }
-
-
-    /**
-     * 解析启动参数
-     *
-     * @param args
-     */
-    private static void parseArgs(String[] args) {
-        if (args == null || args.length == 0) {
-            return;
-        }
-
-        for (String arg : args) {
-            int indexOf = arg.indexOf("=");
-            if (arg.startsWith("--") && indexOf > 0) {
-                String key = arg.substring(2, indexOf);
-                String value = arg.substring(indexOf + 1);
-                setBootArg(key, value);
-            }
-        }
-    }
-
-    public static void setBootArg(String key, Object value) {
-        if (argMap == null) {
-            argMap = new HashMap<>();
-        }
-        argMap.put(key, value.toString());
-    }
-
-    /**
-     * 获取启动参数
-     *
-     * @param key
-     * @return
-     */
-    public static String getBootArg(String key) {
-        if (argMap == null) return null;
-        return argMap.get(key);
-    }
-
-    public static Map<String, String> getBootArgs() {
-        return argMap;
-    }
-
-
-    /**
-     * 开始启动
-     */
-    public void start() {
-
-        printBannerInfo();
-        printConfigInfo();
-
-        ensureServerCreated();
-
-        if (!startServer()) {
-            System.err.println("jboot start fail!!!");
-            return;
-        }
-
-        printServerPath();
-        printServerUrl();
-
-        if (isDevMode()) {
-            AutoDeployManager.me().run();
-        }
-
-
-        JbootAppListenerManager.me().onJbootStarted();
-
-    }
-
-
-    private boolean startServer() {
-        return jbootServer.start();
-    }
-
-
-    private void ensureServerCreated() {
-        if (jbootServer == null) {
-            JbootServerFactory factory = JbootServerFactory.me();
-            jbootServer = factory.buildServer();
-        }
-    }
-
-    private void printBannerInfo() {
-        System.out.println(getBannerText());
-    }
-
-    private String getBannerText() {
-        JbootConfig config = getJbootConfig();
-
-        if (!config.isBannerEnable()) {
-            return "";
-        }
-
-        File bannerFile = new File(getRootClassPath(), config.getBannerFile());
-        if (bannerFile.exists() && bannerFile.canRead()) {
-            String bannerFileText = FileUtils.readString(bannerFile);
-            if (StringUtils.isNotBlank(bannerFileText)) {
-                return bannerFileText;
-            }
-        }
-
-        return "  ____  ____    ___    ___   ______ \n" +
-                " |    ||    \\  /   \\  /   \\ |      |\n" +
-                " |__  ||  o  )|     ||     ||      |\n" +
-                " __|  ||     ||  O  ||  O  ||_|  |_|\n" +
-                "/  |  ||  O  ||     ||     |  |  |  \n" +
-                "\\  `  ||     ||     ||     |  |  |  \n" +
-                " \\____||_____| \\___/  \\___/   |__|  \n" +
-                "                                    ";
-
-    }
-
-    private void printConfigInfo() {
-        System.out.println(getJbootConfig());
-        System.out.println(config(JbootServerConfig.class));
-        System.out.println(config(JbootWebConfig.class));
-    }
-
-
-    private void printServerPath() {
-        System.out.println("server classPath : " + getRootClassPath());
-        System.out.println("server webRoot : " + PathKit.getWebRootPath());
-    }
-
-
-    private void printServerUrl() {
-        JbootServerConfig serverConfig = config(JbootServerConfig.class);
-
-        String host = "0.0.0.0".equals(serverConfig.getHost()) ? "127.0.0.1" : serverConfig.getHost();
-        String port = "80".equals(serverConfig.getPort()) ? "" : ":" + serverConfig.getPort();
-        String path = serverConfig.getContextPath();
-
-        String url = String.format("http://%s%s%s", host, port, path);
-
-        System.out.println("server started success , url : " + url);
-    }
-
-    private static String getRootClassPath() {
-        String path = null;
-        try {
-            path = Jboot.class.getClassLoader().getResource("").toURI().getPath();
-            return new File(path).getAbsolutePath();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        return path;
-    }
-
-
-    ///////////get component methods///////////
-
 
     /**
      * 是否是开发模式
      *
      * @return
      */
-    public boolean isDevMode() {
-        if (devMode == null) {
-            JbootConfig config = getJbootConfig();
-            devMode = MODE.DEV.getValue().equals(config.getMode());
-        }
-        return devMode;
+    public static boolean isDevMode() {
+        return JbootConfigManager.me().isDevMode();
     }
 
-    /**
-     * 获取JbootConfig 配置文件
-     *
-     * @return
-     */
-    public JbootConfig getJbootConfig() {
-        if (jbootConfig == null) {
-            jbootConfig = config(JbootConfig.class);
-        }
-        return jbootConfig;
-    }
-
-
-    /**
-     * 获取 Jbootrpc，进行服务获取和发布
-     *
-     * @return
-     */
-    public Jbootrpc getRpc() {
-        if (jbootrpc == null) {
-            jbootrpc = JbootrpcManager.me().getJbootrpc();
-        }
-        return jbootrpc;
-    }
-
-
-    /**
-     * 获取 MQ，进行消息发送
-     *
-     * @return
-     */
-    public Jbootmq getMq() {
-        return JbootmqManager.me().getJbootmq();
-    }
 
     /**
      * 获取 缓存
      *
      * @return
      */
-    public JbootCache getCache() {
-        if (jbootCache == null) {
-            jbootCache = JbootCacheManager.me().getCache();
-        }
-        return jbootCache;
+    public static JbootCache getCache() {
+        return JbootCacheManager.me().getCache();
     }
 
+
     /**
-     * 获取 jbootHttp 工具类，方便操作http请求
+     * 获取指定的缓存
      *
+     * @param name
      * @return
      */
-    public JbootHttp getHttp() {
-        if (jbootHttp == null) {
-            jbootHttp = JbootHttpManager.me().getJbootHttp();
-        }
-        return jbootHttp;
+    public static JbootCache getCache(String name) {
+        return JbootCacheManager.me().getCache(name);
     }
 
 
@@ -324,21 +73,18 @@ public class Jboot {
      *
      * @return
      */
-    public JbootRedis getRedis() {
-        if (jbootRedis == null) {
-            jbootRedis = JbootRedisManager.me().getRedis();
-        }
-        return jbootRedis;
+    public static JbootRedis getRedis() {
+        return JbootRedisManager.me().getRedis();
     }
 
-
     /**
-     * 获取本地server 例如，undertow
+     * 获取指定的 Redis
      *
+     * @param name
      * @return
      */
-    public JbootServer getServer() {
-        return jbootServer;
+    public static JbootRedis getRedis(String name) {
+        return JbootRedisManager.me().getRedis(name);
     }
 
 
@@ -347,8 +93,28 @@ public class Jboot {
      *
      * @return
      */
-    public MetricRegistry getMetric() {
+    public static MetricRegistry getMetric() {
         return JbootMetricManager.me().metric();
+    }
+
+
+    /**
+     * 获取 Mq
+     *
+     * @return
+     */
+    public static Jbootmq getMq() {
+        return JbootmqManager.me().getJbootmq();
+    }
+
+    /**
+     * 获取指定的 MQ
+     *
+     * @param name
+     * @return
+     */
+    public static Jbootmq getMq(String name) {
+        return JbootmqManager.me().getJbootmq(name);
     }
 
 
@@ -357,12 +123,21 @@ public class Jboot {
      *
      * @return
      */
-    public ISerializer getSerializer() {
-        return SerializerManager.me().getSerializer();
+    public static JbootSerializer getSerializer() {
+        return JbootSerializerManager.me().getSerializer();
     }
 
 
-    ////////// static tool methods///////////
+    /**
+     * 获取序列化对象
+     * @param name
+     * @return
+     */
+    public static JbootSerializer getSerializer(String name) {
+        return JbootSerializerManager.me().getSerializer(name);
+    }
+
+
 
     /**
      * 获取配置信息
@@ -374,6 +149,7 @@ public class Jboot {
     public static <T> T config(Class<T> clazz) {
         return JbootConfigManager.me().get(clazz);
     }
+
 
     /**
      * 读取配置文件信息
@@ -401,8 +177,29 @@ public class Jboot {
         return JbootConfigManager.me().get(clazz, prefix, file);
     }
 
+    /**
+     * 读取某个配置信息
+     *
+     * @param key
+     * @return
+     */
+    public static String configValue(String key) {
+        return JbootConfigManager.me().getConfigValue(key);
+    }
 
-    private JbootrpcConfig rpcConfig;
+
+    /**
+     * 读取某个配置信息
+     *
+     * @param key
+     * @param defaultValue 当获取不到的时候发挥此默认值
+     * @return
+     */
+    public static String configValue(String key, String defaultValue) {
+        String value = configValue(key);
+        return StrUtil.isNotBlank(value) ? value : defaultValue;
+    }
+
 
     /**
      * 获取 RPC 服务
@@ -412,7 +209,19 @@ public class Jboot {
      * @return
      */
     public static <T> T service(Class<T> clazz) {
-        return jboot.getRpc().serviceObtain(clazz, new JbootrpcServiceConfig());
+        return service(clazz, new JbootrpcReferenceConfig());
+    }
+
+    /**
+     * 获取 RPC 服务
+     *
+     * @param clazz
+     * @param config rpc 配置
+     * @param <T>
+     * @return
+     */
+    public static <T> T service(Class<T> clazz, JbootrpcReferenceConfig config) {
+        return JbootrpcManager.me().getJbootrpc().serviceObtain(clazz, config);
     }
 
     /**
@@ -421,7 +230,7 @@ public class Jboot {
      * @param event
      */
     public static void sendEvent(JbootEvent event) {
-        JbootEventManager.me().pulish(event);
+        JbootEventManager.me().publish(event);
     }
 
     /**
@@ -436,115 +245,25 @@ public class Jboot {
 
 
     /**
-     * http get操作
-     *
-     * @param url
-     * @return
-     */
-    public static String httpGet(String url) {
-        return httpGet(url, null);
-    }
-
-    /**
-     * http get操作
-     *
-     * @param url
-     * @param params
-     * @return
-     */
-    public static String httpGet(String url, Map<String, Object> params) {
-        JbootHttpRequest request = JbootHttpRequest.create(url, params, JbootHttpRequest.METHOD_GET);
-        JbootHttpResponse response = jboot.getHttp().handle(request);
-        return response.isError() ? null : response.getContent();
-    }
-
-    /**
-     * http post 操作
-     *
-     * @param url
-     * @return
-     */
-    public static String httpPost(String url) {
-        return httpPost(url, null);
-    }
-
-    /**
-     * Http post 操作
-     *
-     * @param url
-     * @param params post的参数，可以是文件
-     * @return
-     */
-    public static String httpPost(String url, Map<String, Object> params) {
-        JbootHttpRequest request = JbootHttpRequest.create(url, params, JbootHttpRequest.METHOD_POST);
-        JbootHttpResponse response = jboot.getHttp().handle(request);
-        return response.isError() ? null : response.getContent();
-    }
-
-
-    /**
-     * 获取被增强的，可以使用AOP注入的实体类
+     * 根据类名获取 Aop 下的 Bean
      *
      * @param clazz
      * @param <T>
      * @return
      */
-    public static <T> T bean(Class<T> clazz) {
-        return JbootInjectManager.me().getInjector().getInstance(clazz);
-    }
-
-
-    /**
-     * 对某个对象内部的变量进行注入
-     *
-     * @param object
-     */
-    public static void injectMembers(Object object) {
-        JbootInjectManager.me().getInjector().injectMembers(object);
+    public static <T> T getBean(Class<T> clazz) {
+        return Aop.get(clazz);
     }
 
     /**
-     * 通过  hystrix 进行调用
+     * 根据名称获取 Aop 下的 Bean
      *
-     * @param hystrixRunnable
+     * @param name
      * @param <T>
      * @return
      */
-    public static <T> T hystrix(JbootHystrixCommand hystrixRunnable) {
-        return (T) hystrixRunnable.execute();
+    public static <T> T getBean(String name) {
+        return JbootAopFactory.me().getBean(name);
     }
 
-
-    private static Boolean isRunInjar = null;
-
-    /**
-     * 是否在jar包里运行
-     *
-     * @return
-     */
-    public static boolean isRunInJar() {
-        if (isRunInjar == null) {
-            isRunInjar = Thread.currentThread().getContextClassLoader().getResource("") == null;
-        }
-        return isRunInjar;
-    }
-
-
-    /**
-     * 产品模式：开发、测试、产品
-     */
-    public static enum MODE {
-
-        DEV("dev"), TEST("test"), PRODUCT("product");
-
-        private final String value;
-
-        MODE(String value) {
-            this.value = value;
-        }
-
-        public String getValue() {
-            return value;
-        }
-    }
 }

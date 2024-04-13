@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package io.jboot.db.annotation;
 
-import io.shardingjdbc.core.api.config.strategy.ShardingStrategyConfiguration;
-
 import java.lang.annotation.*;
 
 @Inherited
@@ -28,16 +26,6 @@ public @interface Table {
 
     String primaryKey() default "";
 
-    Class<? extends ShardingStrategyConfiguration> databaseShardingStrategyConfig() default ShardingStrategyConfiguration.class;
-
-    Class<? extends ShardingStrategyConfiguration> tableShardingStrategyConfig() default ShardingStrategyConfiguration.class;
-
-    String actualDataNodes() default "";
-
-    String keyGeneratorColumnName() default "";
-
-    Class keyGeneratorClass() default Void.class;
-
     String datasource() default "";
-    
+
 }

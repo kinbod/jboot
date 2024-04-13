@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.jboot.Jboot;
 import io.jboot.db.datasource.DataSourceConfig;
 import io.jboot.exception.JbootIllegalConfigException;
-import io.jboot.utils.StringUtils;
+import io.jboot.utils.StrUtil;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -34,6 +34,11 @@ import java.util.Set;
  * 代码生成工具类
  */
 public class CodeGenHelpler {
+
+
+    public static String getUserDir() {
+        return System.getProperty("user.dir");
+    }
 
 
     /**
@@ -54,9 +59,28 @@ public class CodeGenHelpler {
 
 
     public static MetaBuilder createMetaBuilder() {
-        MetaBuilder metaBuilder = new MetaBuilder(getDatasource());
-        DataSourceConfig datasourceConfig = Jboot.config(DataSourceConfig.class, "jboot.datasource");
-        switch (datasourceConfig.getType()) {
+        return createMetaBuilder(getDatasource(), Jboot.config(DataSourceConfig.class, "jboot.datasource").getType());
+    }
+
+
+    public static MetaBuilder createMetaBuilder(DataSource dataSource) {
+        return createMetaBuilder(dataSource, DataSourceConfig.TYPE_MYSQL);
+    }
+
+
+    public static MetaBuilder createMetaBuilder(DataSource dataSource, String type) {
+        return createMetaBuilder(dataSource, type, true);
+    }
+
+    public static MetaBuilder createMetaBuilder(DataSource dataSource, String type, boolean removeNoPrimaryKeyTable) {
+        MetaBuilder metaBuilder = removeNoPrimaryKeyTable ? new MetaBuilder(dataSource) : new MetaBuilder(dataSource) {
+            @Override
+            protected void removeNoPrimaryKeyTable(List<TableMeta> ret) {
+                //do Nothing...
+            }
+        };
+        metaBuilder.setGenerateRemarks(true);
+        switch (type) {
             case DataSourceConfig.TYPE_MYSQL:
                 metaBuilder.setDialect(new MysqlDialect());
                 break;
@@ -75,12 +99,15 @@ public class CodeGenHelpler {
             case DataSourceConfig.TYPE_POSTGRESQL:
                 metaBuilder.setDialect(new PostgreSqlDialect());
                 break;
+            case DataSourceConfig.TYPE_INFORMIX:
+                metaBuilder.setDialect(new InformixDialect());
+                break;
             default:
-                throw new JbootIllegalConfigException("only support datasource type : mysql、orcale、sqlserver、sqlite、ansisql and postgresql, please check your jboot.properties. ");
+                throw new JbootIllegalConfigException("Only support datasource type: mysql、oracle、sqlserver、sqlite、ansisql、postgresql and infomix" +
+                        ", please check your jboot.properties. ");
         }
 
         return metaBuilder;
-
     }
 
 
@@ -91,12 +118,12 @@ public class CodeGenHelpler {
      * @param excludeTables
      */
     public static void excludeTables(List<TableMeta> list, String excludeTables) {
-        if (StringUtils.isNotBlank(excludeTables)) {
+        if (StrUtil.isNotBlank(excludeTables)) {
             List<TableMeta> newTableMetaList = new ArrayList<>();
-            Set<String> excludeTableSet = StringUtils.splitToSet(excludeTables.toLowerCase(), ",");
+            Set<String> excludeTableSet = StrUtil.splitToSet(excludeTables.toLowerCase(), ",");
             for (TableMeta tableMeta : list) {
                 if (excludeTableSet.contains(tableMeta.name.toLowerCase())) {
-                    System.out.println("exclude table : " + tableMeta.name);
+                    System.out.println("exclude table: " + tableMeta.name);
                     continue;
                 }
                 newTableMetaList.add(tableMeta);

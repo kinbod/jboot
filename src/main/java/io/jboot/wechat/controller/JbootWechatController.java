@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,15 @@ package io.jboot.wechat.controller;
 
 import com.jfinal.aop.Before;
 import com.jfinal.aop.Clear;
-import com.jfinal.ext.interceptor.NotAction;
+import com.jfinal.core.NotAction;
 import com.jfinal.kit.HashKit;
-import com.jfinal.weixin.sdk.api.*;
+import com.jfinal.weixin.sdk.api.ApiConfig;
+import com.jfinal.weixin.sdk.api.ApiConfigKit;
+import com.jfinal.weixin.sdk.api.ApiResult;
+import com.jfinal.weixin.sdk.api.JsTicket;
 import io.jboot.Jboot;
-import io.jboot.utils.RequestUtils;
-import io.jboot.utils.StringUtils;
+import io.jboot.utils.RequestUtil;
+import io.jboot.utils.StrUtil;
 import io.jboot.web.controller.JbootController;
 import io.jboot.wechat.JbootWechatConfig;
 import io.jboot.wechat.WechatApis;
@@ -55,7 +58,7 @@ public abstract class JbootWechatController extends JbootController {
         String code = getPara("code");
 
         //获得不到code？
-        if (StringUtils.isBlank(code)) {
+        if (StrUtil.isBlank(code)) {
             renderText("获取不到正确的code信息");
             return;
         }
@@ -67,8 +70,8 @@ public abstract class JbootWechatController extends JbootController {
         String wechatOpenId = getSessionAttr(SESSION_WECHAT_OPEN_ID);
         String accessToken = getSessionAttr(SESSION_WECHAT_ACCESS_TOKEN);
 
-        if (StringUtils.isNotBlank(wechatOpenId)
-                && StringUtils.isNotBlank(accessToken)) {
+        if (StrUtil.isNotBlank(wechatOpenId)
+                && StrUtil.isNotBlank(accessToken)) {
             doRedirect(gotoUrl, wechatOpenId, accessToken);
             return;
         }
@@ -93,7 +96,7 @@ public abstract class JbootWechatController extends JbootController {
             wechatOpenId = getSessionAttr(SESSION_WECHAT_OPEN_ID);
             accessToken = getSessionAttr(SESSION_WECHAT_ACCESS_TOKEN);
 
-            if (StringUtils.isBlank(wechatOpenId) || StringUtils.isBlank(accessToken)) {
+            if (StrUtil.isBlank(wechatOpenId) || StrUtil.isBlank(accessToken)) {
                 renderText("错误：" + result.getErrorMsg());
                 return;
             }
@@ -124,7 +127,7 @@ public abstract class JbootWechatController extends JbootController {
         redirect(gotoUrl);
     }
 
-    @Before(NotAction.class)
+    @NotAction
     public void clearWechatSession() {
         //移除脏数据后，再次进入授权页面
         removeSessionAttr(SESSION_WECHAT_OPEN_ID);
@@ -133,7 +136,7 @@ public abstract class JbootWechatController extends JbootController {
     }
 
 
-    @Before(NotAction.class)
+    @NotAction
     public void initJsSdkConfig() {
 
         JbootWechatConfig config = Jboot.config(JbootWechatConfig.class);
@@ -142,7 +145,7 @@ public abstract class JbootWechatController extends JbootController {
         // 1.拼接url（当前网页的URL，不包含#及其后面部分）
         String url = getRequest().getRequestURL().toString().split("#")[0];
         String query = getRequest().getQueryString();
-        if (StringUtils.isNotBlank(query)) {
+        if (StrUtil.isNotBlank(query)) {
             url = url.concat("?").concat(query);
         }
 
@@ -152,7 +155,7 @@ public abstract class JbootWechatController extends JbootController {
 
         String _wxJsApiTicket = jsTicket.getTicket();
 
-        String noncestr = StringUtils.uuid();
+        String noncestr = StrUtil.uuid();
         String timestamp = (System.currentTimeMillis() / 1000) + "";
 
         Map<String, String> _wxMap = new TreeMap<String, String>();
@@ -181,15 +184,15 @@ public abstract class JbootWechatController extends JbootController {
 
     public boolean isAllowVisit() {
         HttpServletRequest req = getRequest();
-        if (RequestUtils.isWechatPcBrowser(req)) {
+        if (RequestUtil.isWechatPcBrowser(req)) {
             return false;
         }
 
-        return RequestUtils.isWechatBrowser(req);
+        return RequestUtil.isWechatBrowser(req);
     }
 
-    @Before(NotAction.class)
-    public void doNotAlloVisitRedirect() {
+    @NotAction
+    public void doNotAllowVisitRedirect() {
         /**
          * 一般情况下，此方法是为了调整到其他页面，比如让用户扫描二维码之类的
          * 由子类去实现

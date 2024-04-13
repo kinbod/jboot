@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package io.jboot.web.session;
 
 import io.jboot.Jboot;
-import io.jboot.core.cache.JbootCache;
-import io.jboot.core.cache.JbootCacheManager;
+import io.jboot.components.cache.JbootCache;
+import io.jboot.components.cache.JbootCacheManager;
 
 import javax.servlet.http.*;
-import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,58 +29,83 @@ import java.util.UUID;
 public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
 
     private static JbootSessionConfig config = Jboot.config(JbootSessionConfig.class);
-    
+
     private static int maxInactiveInterval = config.getMaxInactiveInterval();
     private static String cookieName = config.getCookieName();
     private static String cookiePath = config.getCookieContextPath();
     private static String cookieDomain = config.getCookieDomain();
     private static int cookieMaxAge = config.getCookieMaxAge();
     private static String cacheName = config.getCacheName();
-    private static String cacheType = config.getCacheType();
+    private static String useCacheName = config.getUseCacheName();
 
-    private static JbootCache jbootCache = JbootCacheManager.me().getCache(cacheType);
+    private static JbootCache jbootCache = JbootCacheManager.me()
+            .getCache(useCacheName);
 
 
     private HttpServletResponse response;
-    private JbootHttpSession httpSession;
+    private HttpServletRequest originRequest;
+    private HttpSession originSession;
+    private JbootHttpSession jbootSession;
 
 
     public JbootServletRequestWrapper(HttpServletRequest request, HttpServletResponse response) {
         super(request);
         this.response = response;
+        this.originRequest = request;
+        this.originSession = request.getSession(false);
     }
 
     @Override
     public HttpSession getSession() {
-        return getSession(false);
+        return getSession(true);
     }
 
 
     @Override
     public HttpSession getSession(boolean create) {
-        if (httpSession != null) {
-            return httpSession;
+        if (jbootSession != null) {
+            return jbootSession;
         }
 
         String sessionId = getCookie(cookieName);
         if (sessionId != null) {
-            httpSession = new JbootHttpSession(sessionId, getRequest().getServletContext(), createSessionStore(sessionId));
-            httpSession.setMaxInactiveInterval(maxInactiveInterval);
-        } else if (create) {
+            jbootSession = new JbootHttpSession(sessionId, originRequest.getServletContext(), createSessionStore(sessionId), originSession);
+            jbootSession.setMaxInactiveInterval(maxInactiveInterval);
+        } else if (create || originSession != null) {
             sessionId = UUID.randomUUID().toString().replace("-", "");
-            httpSession = new JbootHttpSession(sessionId, getRequest().getServletContext(), createSessionStore(sessionId));
-            httpSession.setMaxInactiveInterval(maxInactiveInterval);
+            jbootSession = new JbootHttpSession(sessionId, originRequest.getServletContext(), createSessionStore(sessionId), originSession);
+            jbootSession.setMaxInactiveInterval(maxInactiveInterval);
             setCookie(cookieName, sessionId, cookieMaxAge);
         }
-        return httpSession;
+
+        return jbootSession;
     }
 
     private Map<String, Object> createSessionStore(String sessionId) {
         Map<String, Object> store = jbootCache.get(cacheName, sessionId);
         if (store == null) {
-            store = Collections.emptyMap();
+            store = new HashMap<>();
+            syncOriginSessionData(store);
+            jbootCache.put(cacheName, sessionId, store);
         }
         return store;
+    }
+
+
+    /**
+     * 同步上层 session 到 sessionStore
+     * @// TODO: 2021/6/3 若上层动态修改了 上层自己的 session，会导致 Controller 的 session 和 上层 session 不同步的情况
+     * @// TODO: 2021/6/3 临时的解决方案需要用户手动通过 Controller 来修改 session 数据
+     * @param store
+     */
+    private void syncOriginSessionData(Map<String, Object> store) {
+        if (this.originSession != null) {
+            Enumeration<String> names = originSession.getAttributeNames();
+            while (names.hasMoreElements()) {
+                String name = names.nextElement();
+                store.put(name, originSession.getAttribute(name));
+            }
+        }
     }
 
 
@@ -87,37 +113,31 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
      * http请求结束时，更新session信息，包括：刷新session的存储时间，更新session数据，清空session数据等
      */
     public void refreshSession() {
-        if (httpSession == null) {
+        if (jbootSession == null) {
             return;
         }
 
-        //session已经被整体删除，调用了session.invalidate()
-        if (!httpSession.isValid()) {
-            jbootCache.remove(cacheName, httpSession.getId());
-            setCookie(cookieName, null, 0);
-        }
-
-        // 空的httpSession数据
-        else if (httpSession.isEmpty()) {
-            jbootCache.remove(cacheName, httpSession.getId());
+        //session 已经被整体删除，用户调用了session.invalidate()
+        if (!jbootSession.isValid()) {
+            jbootCache.remove(cacheName, jbootSession.getId());
             setCookie(cookieName, null, 0);
         }
 
         //session 已经被修改(session数据的增删改查)
-        else if (httpSession.isDataChanged()) {
-            Map<String, Object> snapshot = httpSession.snapshot();
-
+        else if (jbootSession.isDataChanged()) {
+            Map<String, Object> snapshot = jbootSession.snapshot();
             // 数据已经全部被删除了
             if (snapshot.isEmpty()) {
-                jbootCache.remove(cacheName, httpSession.getId());
+                jbootCache.remove(cacheName, jbootSession.getId());
                 setCookie(cookieName, null, 0);
             } else {
-                jbootCache.put(cacheName, httpSession.getId(), snapshot, maxInactiveInterval);
+                jbootCache.put(cacheName, jbootSession.getId(), snapshot, maxInactiveInterval);
             }
         }
+
         //更新session存储时间
         else {
-            jbootCache.setTtl(cacheName, httpSession.getId(), maxInactiveInterval);
+            jbootCache.setTtl(cacheName, jbootSession.getId(), maxInactiveInterval);
         }
     }
 
@@ -134,11 +154,14 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
      * Get cookie object by cookie name.
      */
     private Cookie getCookieObject(String name) {
-        Cookie[] cookies = ((HttpServletRequest) getRequest()).getCookies();
-        if (cookies != null)
-            for (Cookie cookie : cookies)
-                if (cookie.getName().equals(name))
+        Cookie[] cookies = originRequest.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(name)) {
                     return cookie;
+                }
+            }
+        }
         return null;
     }
 
@@ -148,14 +171,20 @@ public class JbootServletRequestWrapper extends HttpServletRequestWrapper {
      * @param maxAgeInSeconds
      */
     private void setCookie(String name, String value, int maxAgeInSeconds) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setMaxAge(maxAgeInSeconds);
-        cookie.setPath(cookiePath);
-        if (cookieDomain != null) {
-            cookie.setDomain(cookieDomain);
+        if (!response.isCommitted()) {
+            Cookie cookie = new Cookie(name, value);
+            cookie.setMaxAge(maxAgeInSeconds);
+            cookie.setPath(cookiePath);
+            if (cookieDomain != null) {
+                cookie.setDomain(cookieDomain);
+            }
+            cookie.setHttpOnly(true);
+            response.addCookie(cookie);
         }
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
     }
 
+
+    public HttpServletRequest getOriginRequest() {
+        return originRequest;
+    }
 }

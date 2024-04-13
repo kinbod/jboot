@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@ import com.jfinal.plugin.activerecord.Model;
 import io.jboot.db.annotation.Table;
 import io.jboot.db.datasource.DataSourceConfig;
 import io.jboot.db.model.JbootModelConfig;
-import io.jboot.utils.ArrayUtils;
+import io.jboot.utils.AnnotationUtil;
+import io.jboot.utils.ArrayUtil;
 import io.jboot.utils.ClassScanner;
-import io.jboot.utils.StringUtils;
+import io.jboot.utils.StrUtil;
 
 import java.util.*;
 
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
- * @Package io.jboot.db
  */
 public class TableInfoManager {
 
@@ -42,39 +42,60 @@ public class TableInfoManager {
     }
 
 
-    public List<TableInfo> getTablesInfos(DataSourceConfig dataSourceConfig) {
-        List<TableInfo> tableInfos = new ArrayList<>();
+    /**
+     * 初始化该数据下的 tableInfos 对象，其用来存储该数据源下有哪些表
+     *
+     * @param dataSourceConfig
+     */
+    public void initConfigMappingTables(DataSourceConfig dataSourceConfig) {
 
-        Set<String> configTables = null;
-        if (StringUtils.isNotBlank(dataSourceConfig.getTable())) {
-            configTables = StringUtils.splitToSet(dataSourceConfig.getTable(), ",");
-        }
+        // 该数据源下配置的所有表
+        Set<String> configTables = StrUtil.isNotBlank(dataSourceConfig.getTable())
+                ? StrUtil.splitToSetByComma(dataSourceConfig.getTable())
+                : null;
 
-        for (TableInfo tableInfo : getAllTableInfos()) {
-            if (tableInfo.getDatasources().contains(dataSourceConfig.getName())) {
+        // 该数据源下排除的所有表
+        Set<String> configExTables = StrUtil.isNotBlank(dataSourceConfig.getExTable())
+                ? StrUtil.splitToSetByComma(dataSourceConfig.getExTable())
+                : null;
 
-                //如果 datasource.table 已经配置了，就只用这个配置的，不是这个配置的都排除
-                if (configTables != null && !configTables.contains(tableInfo.getTableName())) {
-                    continue;
-                }
+        // 所有的表信息
+        List<TableInfo> allTableInfos = getAllTableInfos();
 
-                tableInfos.add(tableInfo);
+
+        for (TableInfo tableInfo : allTableInfos) {
+
+            // 排除配置 jboot.datasource.extable 包含了这个表
+            if (configExTables != null && configExTables.contains(tableInfo.getTableName())) {
+                continue;
             }
-        }
 
-        if (StringUtils.isNotBlank(dataSourceConfig.getExTable())) {
-            Set<String> configExTables = StringUtils.splitToSet(dataSourceConfig.getExTable(), ",");
-            for (Iterator<TableInfo> iterator = tableInfos.iterator(); iterator.hasNext(); ) {
-                TableInfo tableInfo = iterator.next();
-
-                //如果配置当前数据源的排除表，则需要排除当前数据源的表信息
-                if (configExTables.contains(tableInfo.getTableName())) {
-                    iterator.remove();
-                }
+            if (configTables != null && configTables.contains(tableInfo.getTableName())) {
+                dataSourceConfig.addTableInfo(tableInfo, true);
             }
+
+            if (tableInfo.getDatasourceNames().contains(dataSourceConfig.getName())) {
+                dataSourceConfig.addTableInfo(tableInfo, true);
+            }
+
+            // 排除所有表，但允许当前数据源自己指定的表，指定的表不被排除
+            if (configExTables != null && configExTables.contains("*")) {
+                continue;
+            }
+
+            // 注解 @Table(datasource="xxxx") 指定了数据源，而且当前数据源未匹配
+            if (tableInfo.getDatasourceNames().size() > 0) {
+                continue;
+            }
+
+            // 如果当前的数据源已经配置了绑定的表，且未当前表未命中，不让其他表添加到当前数据源
+            if (configTables != null && configTables.size() > 0) {
+                continue;
+            }
+
+            dataSourceConfig.addTableInfo(tableInfo, false);
         }
 
-        return tableInfos;
     }
 
     private List<TableInfo> getAllTableInfos() {
@@ -86,48 +107,45 @@ public class TableInfoManager {
     }
 
 
-    private void initTableInfos(List<TableInfo> tableInfos) {
+    private void initTableInfos(List<TableInfo> tableInfoList) {
         List<Class<Model>> modelClassList = ClassScanner.scanSubClass(Model.class);
-        if (ArrayUtils.isNullOrEmpty(modelClassList)) {
+        if (ArrayUtil.isNullOrEmpty(modelClassList)) {
             return;
         }
 
-        String scanPackage = JbootModelConfig.getConfig().getScan();
+        String scanPackage = JbootModelConfig.getConfig().getScanPackage();
+        String unscanPackage = JbootModelConfig.getConfig().getUnscanPackage();
 
         for (Class<Model> clazz : modelClassList) {
             Table tb = clazz.getAnnotation(Table.class);
-            if (tb == null)
-                continue;
-
-            if (scanPackage != null && !clazz.getName().startsWith(scanPackage)) {
+            if (tb == null) {
                 continue;
             }
 
-            Set<String> datasources = new HashSet<>();
-            if (StringUtils.isNotBlank(tb.datasource())) {
-                datasources.addAll(StringUtils.splitToSet(tb.datasource(), ","));
-            } else {
-                datasources.add(DataSourceConfig.NAME_DEFAULT);
+            if (StrUtil.isNotBlank(scanPackage)
+                    && clazz.getName().startsWith(scanPackage.trim())) {
+                addTable(tableInfoList, clazz, tb);
+                continue;
             }
 
 
-            TableInfo tableInfo = new TableInfo();
-            tableInfo.setModelClass(clazz);
-            tableInfo.setPrimaryKey(tb.primaryKey());
-            tableInfo.setTableName(tb.tableName());
-            tableInfo.setDatasources(datasources);
-
-            tableInfo.setActualDataNodes(tb.actualDataNodes());
-            tableInfo.setDatabaseShardingStrategyConfig(tb.databaseShardingStrategyConfig());
-            tableInfo.setTableShardingStrategyConfig(tb.tableShardingStrategyConfig());
-
-            if (tb.keyGeneratorClass() != null && Void.class != tb.keyGeneratorClass()) {
-                tableInfo.setKeyGeneratorClass(tb.keyGeneratorClass().getName());
+            if (StrUtil.isNotBlank(unscanPackage)
+                    && ("*".equals(unscanPackage.trim()) || clazz.getName().startsWith(unscanPackage.trim()))) {
+                continue;
             }
-            tableInfo.setKeyGeneratorColumnName(tb.keyGeneratorColumnName());
 
-            tableInfos.add(tableInfo);
+            addTable(tableInfoList, clazz, tb);
         }
 
+    }
+
+    private void addTable(List<TableInfo> tableInfoList, Class<Model> modelClass, Table tb) {
+        TableInfo tableInfo = new TableInfo();
+        tableInfo.setModelClass(modelClass);
+        tableInfo.setPrimaryKey(AnnotationUtil.get(tb.primaryKey()));
+        tableInfo.setTableName(AnnotationUtil.get(tb.tableName()));
+        tableInfo.setDatasource(AnnotationUtil.get(tb.datasource()));
+
+        tableInfoList.add(tableInfo);
     }
 }

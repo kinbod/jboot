@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import javax.sql.DataSource;
 /**
  * @author Michael Yang 杨福海 （fuhai999@gmail.com）
  * @version V1.0
- * @Package io.jboot.db.datasource
  */
 public class HikariDataSourceFactory implements DataSourceFactory {
 
@@ -57,11 +56,18 @@ public class HikariDataSourceFactory implements DataSourceFactory {
             hikariConfig.setConnectionInitSql(config.getConnectionInitSql());
         }
 
+        if(config.getKeepaliveTime() != null){
+            hikariConfig.setKeepaliveTime(config.getKeepaliveTime());
+        }
+
+        if(config.getValidationQuery() != null){
+            hikariConfig.setConnectionTestQuery(config.getValidationQuery());
+        }
 
         HikariDataSource dataSource = new HikariDataSource(hikariConfig);
 
-        if (Jboot.me().getMetric() != null) {
-            dataSource.setMetricRegistry(Jboot.me().getMetric());
+        if (Jboot.getMetric() != null) {
+            dataSource.setMetricRegistry(Jboot.getMetric());
         }
 
         return dataSource;

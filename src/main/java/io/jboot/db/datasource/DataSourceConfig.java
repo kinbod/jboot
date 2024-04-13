@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2018, Michael Yang 杨福海 (fuhai999@gmail.com).
+ * Copyright (c) 2015-2022, Michael Yang 杨福海 (fuhai999@gmail.com).
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,17 @@
  */
 package io.jboot.db.datasource;
 
-import io.jboot.utils.StringUtils;
+import com.jfinal.plugin.activerecord.DbKit;
+import io.jboot.db.TableInfo;
+import io.jboot.db.driver.DriverClassNames;
+import io.jboot.utils.StrUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 public class DataSourceConfig {
-    public static final String NAME_DEFAULT = "main";
+    public static final String NAME_DEFAULT = DbKit.MAIN_CONFIG_NAME;
 
     public static final String TYPE_MYSQL = "mysql";
     public static final String TYPE_ORACLE = "oracle";
@@ -30,13 +33,17 @@ public class DataSourceConfig {
     public static final String TYPE_SQLITE = "sqlite";
     public static final String TYPE_ANSISQL = "ansisql";
     public static final String TYPE_POSTGRESQL = "postgresql";
+    public static final String TYPE_DM = "dm";
+    public static final String TYPE_CLICKHOUSE = "clickhouse";
+    public static final String TYPE_INFORMIX = "informix";
+
 
     private String name;
     private String type = TYPE_MYSQL;
     private String url;
     private String user;
     private String password;
-    private String driverClassName = "com.mysql.jdbc.Driver";
+    private String driverClassName;
     private String connectionInitSql;
     private String poolName;
     private boolean cachePrepStmts = true;
@@ -48,26 +55,41 @@ public class DataSourceConfig {
     private Long idleTimeout;
     private Integer minimumIdle = 0;
 
+    // 配置获取连接等待超时的时间
+    private long maxWait = -1;
+
+    // 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+    private long timeBetweenEvictionRunsMillis = 60 * 1000L;
+    // 配置连接在池中最小生存的时间
+    private long minEvictableIdleTimeMillis = 1000L * 60L * 30L;
+    // 配置发生错误时多久重连
+    private long timeBetweenConnectErrorMillis = 500;
+    private String validationQuery;
+    private boolean testWhileIdle = true;
+    private boolean testOnBorrow = false;
+    private boolean testOnReturn = false;
+
     private String sqlTemplatePath;
     private String sqlTemplate;
     private String factory; //HikariDataSourceFactory.class.getName();
 
-    private boolean shardingEnable = false;
-    private String shardingDatabase;
-
-
-    private List<DataSourceConfig> childDatasourceConfigs;
-
+    private String shardingConfigYaml;
 
     private String dbProFactory;
     private String containerFactory;
     private Integer transactionLevel;
 
-    private String table; //此数据源包含哪些表，这个配置会覆盖@Table注解的配置
-    private String exTable; //该数据源排除哪些表，这个配置会修改掉@Table上的配置
+    private String table; //此数据源包含哪些表
+    private String exTable; //该数据源排除哪些表
+    private String tablePrefix; //表前缀，假设 @Table(tableName="xxx")，那么实际表名为：tablePrefix + tableName
 
     private String dialectClass;
+    private String activeRecordPluginClass;
 
+    /**
+     * HikariCP 连接探活间隔时间 4.0.1以上版本支持，建议设置为10分钟以内
+     */
+    private Long keepaliveTime;
     /**
      * 是否需要添加到映射
      * 在一个表有多个数据源的情况下，应该只需要添加一个映射就可以了，
@@ -75,6 +97,7 @@ public class DataSourceConfig {
      * 不添加映射：通过 model.use("xxx").save()这种方式去调用该数据源
      */
     private boolean needAddMapping = true;
+
 
     public String getName() {
         return name;
@@ -117,7 +140,10 @@ public class DataSourceConfig {
     }
 
     public String getDriverClassName() {
-        return driverClassName;
+        if (StrUtil.isNotBlank(driverClassName)) {
+            return driverClassName;
+        }
+        return DriverClassNames.getDefaultDriverClass(getType());
     }
 
     public void setDriverClassName(String driverClassName) {
@@ -165,8 +191,7 @@ public class DataSourceConfig {
     }
 
     public boolean isConfigOk() {
-        return (StringUtils.isNotBlank(url))
-                || shardingEnable == true;
+        return StrUtil.isNotBlank(getUrl()) || StrUtil.isNotBlank(getShardingConfigYaml());
     }
 
 
@@ -230,36 +255,12 @@ public class DataSourceConfig {
         this.needAddMapping = needAddMapping;
     }
 
-    public boolean isShardingEnable() {
-        return shardingEnable;
+    public String getShardingConfigYaml() {
+        return shardingConfigYaml;
     }
 
-    public void setShardingEnable(boolean shardingEnable) {
-        this.shardingEnable = shardingEnable;
-    }
-
-    public String getShardingDatabase() {
-        return shardingDatabase;
-    }
-
-    public void setShardingDatabase(String shardingDatabase) {
-        this.shardingDatabase = shardingDatabase;
-    }
-
-    public List<DataSourceConfig> getChildDatasourceConfigs() {
-        return childDatasourceConfigs;
-    }
-
-    public void setChildDatasourceConfigs(List<DataSourceConfig> childDatasourceConfigs) {
-        this.childDatasourceConfigs = childDatasourceConfigs;
-    }
-
-    public void addChildDatasourceConfig(DataSourceConfig config) {
-        if (this.childDatasourceConfigs == null) {
-            this.childDatasourceConfigs = new ArrayList<>();
-        }
-
-        this.childDatasourceConfigs.add(config);
+    public void setShardingConfigYaml(String shardingConfigYaml) {
+        this.shardingConfigYaml = shardingConfigYaml;
     }
 
     public String getDbProFactory() {
@@ -302,6 +303,14 @@ public class DataSourceConfig {
         this.exTable = exTable;
     }
 
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
+
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
+    }
+
     public Long getMaxLifetime() {
         return maxLifetime;
     }
@@ -332,5 +341,131 @@ public class DataSourceConfig {
 
     public void setDialectClass(String dialectClass) {
         this.dialectClass = dialectClass;
+    }
+
+    public String getActiveRecordPluginClass() {
+        return activeRecordPluginClass;
+    }
+
+    public void setActiveRecordPluginClass(String activeRecordPluginClass) {
+        this.activeRecordPluginClass = activeRecordPluginClass;
+    }
+
+    public long getMaxWait() {
+        return maxWait;
+    }
+
+    public void setMaxWait(long maxWait) {
+        this.maxWait = maxWait;
+    }
+
+    public long getTimeBetweenEvictionRunsMillis() {
+        return timeBetweenEvictionRunsMillis;
+    }
+
+    public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
+        this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
+    }
+
+    public long getMinEvictableIdleTimeMillis() {
+        return minEvictableIdleTimeMillis;
+    }
+
+    public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
+        this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
+    }
+
+    public long getTimeBetweenConnectErrorMillis() {
+        return timeBetweenConnectErrorMillis;
+    }
+
+    public void setTimeBetweenConnectErrorMillis(long timeBetweenConnectErrorMillis) {
+        this.timeBetweenConnectErrorMillis = timeBetweenConnectErrorMillis;
+    }
+
+    public String getValidationQuery() {
+        if (validationQuery != null) {
+            return validationQuery;
+        }
+        if (this.url == null) {
+            return null;
+        }
+        String url = this.url.toLowerCase();
+        if (url.startsWith("jdbc:oracle")) {
+            return "select 1 from dual";
+        } else if (url.startsWith("jdbc:db2")) {
+            return "select 1 from sysibm.sysdummy1";
+        } else if (url.startsWith("jdbc:hsqldb")) {
+            return "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS";
+        } else if (url.startsWith("jdbc:derby")) {
+            return "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS";
+        }
+        return "select 1";
+    }
+
+    public void setValidationQuery(String validationQuery) {
+        this.validationQuery = validationQuery;
+    }
+
+    public boolean isTestWhileIdle() {
+        return testWhileIdle;
+    }
+
+    public void setTestWhileIdle(boolean testWhileIdle) {
+        this.testWhileIdle = testWhileIdle;
+    }
+
+    public boolean isTestOnBorrow() {
+        return testOnBorrow;
+    }
+
+    public void setTestOnBorrow(boolean testOnBorrow) {
+        this.testOnBorrow = testOnBorrow;
+    }
+
+    public boolean isTestOnReturn() {
+        return testOnReturn;
+    }
+
+    public void setTestOnReturn(boolean testOnReturn) {
+        this.testOnReturn = testOnReturn;
+    }
+
+
+    private List<TableInfo> tableInfos;
+
+    /**
+     * 添加表信息
+     *
+     * @param tableInfo      表信息
+     * @param fromDesignated 是否是通过 jboot.datasource.table 或者 @table(datasource="xxx") 来指定的
+     */
+    public void addTableInfo(TableInfo tableInfo, boolean fromDesignated) {
+        if (tableInfos == null) {
+            tableInfos = new ArrayList<>();
+        }
+
+        if (!tableInfos.contains(tableInfo) && tableInfo.addAttachedDatasource(this, fromDesignated)) {
+            tableInfos.add(tableInfo);
+        }
+    }
+
+    public void removeTableInfo(TableInfo tableInfo) {
+        if (tableInfos != null) {
+            tableInfos.remove(tableInfo);
+        }
+    }
+
+
+    public List<TableInfo> getTableInfos() {
+        return tableInfos;
+    }
+
+    public Long getKeepaliveTime() {
+        return keepaliveTime;
+    }
+
+    public void setKeepaliveTime(Long keepaliveTime) {
+        this.keepaliveTime = keepaliveTime;
     }
 }
