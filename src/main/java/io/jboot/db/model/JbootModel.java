@@ -546,8 +546,8 @@ public class JbootModel<M extends JbootModel<M>> extends Model<M> {
     }
 
 
-    protected String buildIdCacheName(String orginal) {
-        return orginal;
+    protected String buildIdCacheName(String original) {
+        return original;
     }
 
     protected String buildIdCacheKey(Object... idValues) {
@@ -770,7 +770,6 @@ public class JbootModel<M extends JbootModel<M>> extends Model<M> {
         String sql = _getDialect().forFindByColumns(alias, joins, _getTableName(), loadColumns, columns.getList(), orderBy, count);
         return columns.isEmpty() ? find(sql) : find(sql, columns.getValueArray());
     }
-
 
     //方便在某些场景下，对 columns 进行二次加工
     protected void processColumns(Columns columns, String action) {

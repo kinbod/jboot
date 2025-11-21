@@ -1,3 +1,23 @@
+jboot v4.1.9 2024-08-30:
+优化：升级 JFinal 到最新版本 v5.2.2
+优化：调整 fastjson 以适配 redis 序列化的问题
+优化：优化 JbootResourceLoader 的异常捕获
+
+
+
+jboot v4.1.8 2024-08-20:
+修复：紧急修复上个版本合并的 JbootModel 造成的问题
+
+
+
+jboot v4.1.7 2024-08-18:
+优化：JbootAopFactory.java 构造方法访问权限修改为 protected 方便继承扩展，感谢 @macaque
+优化：cache 带有dataLoader的方法中日志会打印多次问题，感谢 @macaque
+优化：findListByColumns 增加从 start 开始取 count 条方法 即 limit ?,?，感谢 @464455798@qq.com
+修复：修复 brpop blpop 无法取出 key 的问题，感谢 @macaque
+
+
+
 jboot v4.1.6 2024-06-01:
 新增：根据 configName 获取 ActiveRecordPlugin 的功能，方便扩展，感谢 @caoyuan
 优化：优化 SentinelUtil 工具类
@@ -747,7 +767,7 @@ jboot v3.9.8:
 
 jboot v3.9.7:
 新增：@Lazy 懒加载注入的功能
-新增：JbootController.getOrginalRequest() 方法，用于获取进过 Xss 处理后的原始 Request
+新增：JbootController.getOriginalRequest() 方法，用于获取进过 Xss 处理后的原始 Request
 新增：JbootDirectiveBase.getParaToBigDecimal() 的系列方法
 新增：Interceptors.addIfNotExist() 方法，用于对某些注解进行单次添加
 新增：JbootController.getParaToBigDecimal() 和 getParaToBigInteger() 方法
